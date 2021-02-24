@@ -1,0 +1,14 @@
+---
+version: '3.5'
+
+services:
+
+  homeland-party:
+    container_name: homeland-party
+    image: "postgres:10"
+    environment:
+      POSTGRES_USER: "django"
+      POSTGRES_PASSWORD: "django"
+      POSTGRES_DB: "homeland-party"
+    ports:
+      - "5447:5432"

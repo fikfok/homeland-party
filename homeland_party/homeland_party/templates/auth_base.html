@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block container %}
+    <div class="container form-box">
+        <div class="row justify-content-center">
+            <div class="col-xl-5 col-lg-6 col-md-10 col-sm-12 mx-auto mt-lg-5 form-elegant">
+                <div class="card wow fadeIn animated" data-wow-delay="0.3s"
+                     style="visibility: visible; animation-name: fadeIn; animation-delay: 0.3s;">
+                    <div class="card-body mx-4">
+                        <div class="form-header purple-gradient">
+                            <h3>{% block form_heading %}{% endblock %}</h3>
+                        </div>
+                        {% block form %}
+                        {% endblock %}
+
+                        {% if reset_password_url_not_valid %}
+                            <h3 class="text-center" style="color: lightgray">{% trans 'URL is not valid' %}</h3>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer mx-5 pt-3 mb-1">
+                        <p class="font-small grey-text d-flex justify-content-end">
+                            {% block message %}
+                            {% endblock %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        localStorage.clear();
+    </script>
+{% endblock container %}
+

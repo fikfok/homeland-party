@@ -19,7 +19,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'homeland_party',
     'veche',
-    'crispy_forms',
 ]
 
 MIDDLEWARE = [

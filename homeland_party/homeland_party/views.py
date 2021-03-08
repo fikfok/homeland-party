@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template import RequestContext
 from django.views import generic
 
@@ -8,17 +8,19 @@ from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 
 
-class HomePage(generic.TemplateView, RequestContext):
+class HomePage(LoginRequiredMixin, generic.TemplateView, RequestContext):
+    login_url = '/login'
     template_name = 'home.html'
 
-    def get(self, *args, **kwargs):
-        if not self.request.user.is_authenticated:
-            return HttpResponseRedirect('login')
-        return super().get(*args, **kwargs)
 
+class LoginPage(generic.TemplateView):
+    template_name = 'login.html'
 
-def user_login(request):
-    if request.method == 'POST':
+    def get(self, request, *args, **kwargs):
+        form = LoginForm()
+        return render(request, 'login.html', {'form': form})
+
+    def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
@@ -31,6 +33,3 @@ def user_login(request):
                     return HttpResponse('Disabled account')
             else:
                 return HttpResponse('Invalid login')
-    else:
-        form = LoginForm()
-    return render(request, 'login.html', {'form': form})

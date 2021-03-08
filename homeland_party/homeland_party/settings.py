@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'homeland_party',
     'veche',
+    'crowdfunding',
+    'crowdsourcing',
 ]
 
 MIDDLEWARE = [

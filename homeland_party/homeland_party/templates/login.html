@@ -1,37 +1,38 @@
-{% extends "auth_base.html" %}
-
 {% load i18n %}
+{% load static %}
 
-{#{% block title %}{{ block.super }}{% trans 'Log in' %}{% endblock %}#}
+<!DOCTYPE html>
+<html lang="en">
 
-{#{% block form_heading %}{% trans 'Authorization' %}{% endblock %}#}
+<head>
+    <meta charset="utf-8">
+{#    <meta name="description" content="{% block description %}{% endblock description %}">#}
+{#    <title>{% block title %}{% include "_brandname.html" %}{% endblock %}</title>#}
+    <link href="{% static 'mdb5/css/mdb.min.css' %}" rel="stylesheet">
+    {% block styles %}
+    {% endblock styles %}
 
-{% block container %}
+    {% block scripts_head %}{% endblock scripts_head %}
 
-{#    {% if not user.is_authenticated  %}#}
-{#        <form action="/login/{% if next %}?next={{ next }}{% endif %}{% if next and user_redirect_token %}&user_redirect_token={{ user_redirect_token }}{% endif %}" method="post">#}
-{#            <div class="text-danger">{{ form.non_field_errors }}</div>#}
-{#            {% csrf_token %}#}
-{#            {%  form.username label_class="grey-text font-weight-light" %}#}
-{#            {%  form.password label_class="grey-text font-weight-light" %}#}
-{#            <div class="d-flex justify-content-center flex-fill mb-2">#}
-{#                <button id="login-button" type="submit" class="btn btn-secondary waves-block">{% trans 'Log in' %}</button>#}
-{#            </div>#}
-{#        </form>#}
-{##}
-{#    {% else %}#}
-{#        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 mx-auto mt-lg-5 form-elegant">#}
-{#            <h3 class="text-center" style="color: lightgray">{% trans 'User is already authenticated' %}</h3>#}
-{#        </div>#}
-{#    {% endif %}#}
-    <h1>Log-in</h1>
-    <p>Please, use the following form to log-in:</p>
-    <form action="." method="post">
-        {{ form.username }}
-        {{ form.password }}
-{#        {{ form.as_p }}#}
+</head>
 
-        {% csrf_token %}
-        <p><input type="submit" value="Log-in"></p>
-    </form>
-{% endblock container %}
+<body>
+
+<div class="mt-3">
+    {% block container %}
+        <h1>Вход</h1>
+        <form action="." method="post">
+            {% csrf_token %}
+            {{ form.username }}
+            {{ form.password }}
+            <br></br>
+            <p><input type="submit" value="Вход"></p>
+        </form>
+    {% endblock container %}
+</div>
+
+
+<script src="{% static 'mdb5/js/mdb.min.js' %}"></script>
+
+</body>
+</html>

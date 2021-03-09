@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 
-from .views import HomePage, LoginPage
+from homeland_party.views import HomePage, LoginPage
 import veche.urls as veche_urls
 import crowdfunding.urls as crowdfunding_urls
 import crowdsourcing.urls as crowdsourcing_urls

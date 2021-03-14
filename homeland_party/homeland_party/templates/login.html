@@ -23,10 +23,15 @@
         <h1>Вход</h1>
         <form action="." method="post">
             {% csrf_token %}
-            {{ form.username }}
-            {{ form.password }}
-            <br></br>
-            <p><input type="submit" value="Вход"></p>
+            <div class="d-grid gap-1">
+                <div class="p-2">
+                    {{ form.username }}
+                    {{ form.password }}
+                </div>
+                <div class="p-2">
+                    <input type="submit" value="Вход" class="btn btn-primary">
+                </div>
+            </div>
         </form>
     {% endblock container %}
 </div>

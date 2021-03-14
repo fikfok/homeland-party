@@ -1,0 +1,14 @@
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Здравствуйте!</h1>
+    <p>Пользователь <b>{{ author.username }}</b> выслал Вам инвайт на сайт <a href="{{ home_url }}">родная-партия.рф</a>.</p>
+    <p>Перейдите, пожалуйста, по ссылке для создания аккаунта: <a href="{{ url }}">{{ url }}</a></p>
+    <p>Обращаем внимание, что ссылка на приглашение действует в течении {{ url_lifetime_period_hours }} часов.</p>
+</body>
+</html>

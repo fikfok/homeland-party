@@ -33,3 +33,5 @@ class LoginPage(generic.TemplateView):
                     return HttpResponse('Disabled account')
             else:
                 return HttpResponse('Invalid login')
+        else:
+            return HttpResponse('Invalid form data')

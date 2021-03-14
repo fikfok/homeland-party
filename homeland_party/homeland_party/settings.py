@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'veche',
     'crowdfunding',
     'crowdsourcing',
+    'invite',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block container %}
+        <div id="content">
+            {% block content %}
+               <h1>Инвайты</h1>
+            {% endblock %}
+        </div>
+        <div id="invites" class="row">
+
+            <section class="col-md-5">
+                <h2>Выслать инвайт</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="d-grid gap-1">
+                          <div class="p-2">{{ invite_form.email }}</div>
+                          <div class="p-2">
+                              <input type="submit" value="Выслать" class="btn btn-primary">
+                          </div>
+                        </div>
+                    </div>
+                </form>
+
+            </section>
+            <section class="col-md-7">
+                <h2>Ранее высланые инвайты</h2>
+            </section>
+
+        </div>
+
+{% endblock container %}

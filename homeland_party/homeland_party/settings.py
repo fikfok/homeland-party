@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'crowdfunding',
     'crowdsourcing',
     'invite',
+    'personal_cabinet',
 ]
 
 MIDDLEWARE = [

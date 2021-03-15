@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block container %}
+        <div id="content">
+            {% block content %}
+                <h1>Персональный кабинет</h1>
+                {% include "personal_cabinet_tabs.html" %}
+            {% endblock %}
+        </div>
+{% endblock container %}

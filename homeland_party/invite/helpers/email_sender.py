@@ -1,3 +1,4 @@
+import os
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
@@ -15,9 +16,9 @@ class EmailSender:
     Отправляет email с инвайтом
     """
     PORT = 465
-    SENDER_EMAIL = ''
-    SENDER_PASSWORD = ''
-    SMTP_SERVER = ''
+    SENDER_EMAIL = 'fikfok' + '@' + 'mail.ru'
+    SENDER_PASSWORD = os.environ.get('SMTP_EMAIL_PASSOWRD')
+    SMTP_SERVER = 'smtp.mail.ru'
 
     def __init__(self, email: str, request):
         self.receiver_email = email
@@ -25,8 +26,10 @@ class EmailSender:
         self.author = request.user
 
     def send_email(self):
-        invite = Invite.objects.create(author=self.author)
-        url = self.request.build_absolute_uri(reverse('invite:activate_invite', kwargs={'uuid': str(invite.code)}))
+        invite = Invite.objects.create(author=self.author, email=self.receiver_email)
+        url = self.request.build_absolute_uri(
+            reverse('invite:activate_invite', kwargs={'invite_code': str(invite.code)})
+        )
 
         msg = MIMEMultipart('alternative')
         msg['From'] = self.SENDER_EMAIL

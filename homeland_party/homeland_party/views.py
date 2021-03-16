@@ -30,8 +30,8 @@ class LoginPage(generic.TemplateView):
                     login(request, user)
                     return redirect('home')
                 else:
-                    return HttpResponse('Disabled account')
+                    return HttpResponse('Аккаунт заблокирован')
             else:
-                return HttpResponse('Invalid login')
+                return HttpResponse('Неверный логин')
         else:
-            return HttpResponse('Invalid form data')
+            return HttpResponse('Неверная дата')

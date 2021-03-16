@@ -30,4 +30,4 @@ class PersonalCabinet(LoginRequiredMixin, TemplateView):
             email_sender.send_email()
             return HttpResponseRedirect(reverse('personal_cabinet:personal_cabinet') + '?active_tab=invites')
         else:
-            return HttpResponse('Invalid form data')
+            return HttpResponse('Неверные данные')

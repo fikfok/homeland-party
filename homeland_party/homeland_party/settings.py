@@ -17,12 +17,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'safedelete',
     'homeland_party',
     'veche',
     'crowdfunding',
     'crowdsourcing',
     'invite',
     'personal_cabinet',
+
 ]
 
 MIDDLEWARE = [

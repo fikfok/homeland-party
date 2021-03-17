@@ -6,9 +6,9 @@
 
 <head>
     <meta charset="utf-8">
-{#    <meta name="description" content="{% block description %}{% endblock description %}">#}
-{#    <title>{% block title %}{% include "_brandname.html" %}{% endblock %}</title>#}
     <link href="{% static 'mdb5/css/mdb.min.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesome-5.15.2/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'fontawesome-5.15.2/css/fontawesome.min.css' %}" rel="stylesheet">
     {% block styles %}
     {% endblock styles %}
 
@@ -17,9 +17,6 @@
 </head>
 
 <body>
-
-{#{% include 'ajax_setup.html' %}#}
-{#{% include 'session_security/all.html' %}#}
 
 {% block navbar %}
     {% include 'navbar.html' %}
@@ -32,12 +29,10 @@
     {% block container %}
     {% endblock container %}
 </div>
+
 <!-- Site footer -->
-{#{% block footer %}#}
-{#    {% include "_footer.html" %}#}
-{#{% endblock %}#}
-
-
+{% block footer %}
+{% endblock %}
 
 {% block scripts %}
 {% endblock scripts %}

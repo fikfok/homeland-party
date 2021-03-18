@@ -10,16 +10,15 @@ from invite.forms import InviteForm
 from invite.helpers.email_sender import EmailSender
 
 
-class PersonalCabinet(LoginRequiredMixin, TemplateView):
+class PersonalCabinetInvites(LoginRequiredMixin, TemplateView):
     login_url = '/login'
 
     def get(self, request, *args, **kwargs):
         form = InviteForm()
         context = {
             'invite_form': form,
-            'active_tab': request.GET.get('active_tab', 'personal_data'),
         }
-        return render(request, 'personal_cabinet_main.html', context)
+        return render(request, 'invite/invite_section.html', context)
 
     def post(self, request, *args, **kwargs):
         form = InviteForm(request.POST)
@@ -28,6 +27,6 @@ class PersonalCabinet(LoginRequiredMixin, TemplateView):
             email = cd['email']
             email_sender = EmailSender(email=email, request=request)
             email_sender.send_email()
-            return HttpResponseRedirect(reverse('personal_cabinet:personal_cabinet') + '?active_tab=invites')
+            return HttpResponseRedirect(reverse('personal_cabinet:invites'))
         else:
             return HttpResponse('Неверные данные')

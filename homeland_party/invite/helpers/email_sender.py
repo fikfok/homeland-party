@@ -13,7 +13,7 @@ from invite.models import Invite
 
 class EmailSender:
     """
-    Отправляет email с инвайтом
+    Отправляет email с приглашением
     """
     PORT = 465
     SENDER_EMAIL = 'fikfok' + '@' + 'mail.ru'
@@ -34,7 +34,7 @@ class EmailSender:
         msg = MIMEMultipart('alternative')
         msg['From'] = self.SENDER_EMAIL
         msg['To'] = self.receiver_email
-        msg['Subject'] = "Инвайт"
+        msg['Subject'] = "Приглашение"
 
         template_context = {
             'home_url': self.request.build_absolute_uri(reverse('home')),

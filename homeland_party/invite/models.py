@@ -8,19 +8,19 @@ from safedelete.models import SafeDeleteModel
 
 def invite_default_expire_at() -> datetime:
     """
-    Значение по-умолчанию даты истекания срока годности инвайта
-    :return: дата и время истечения срока годности инвайта
+    Значение по-умолчанию даты истекания срока годности приглашения
+    :return: дата и время истечения срока годности приглашения
     """
     return datetime.now() + Invite.EXPIRE_PERIOD_HOURS
 
 
 class Invite(SafeDeleteModel, models.Model):
-    # Период, после которого инвайт протухает
+    # Период, после которого приглашение протухает
     EXPIRE_PERIOD_HOURS = timedelta(hours=24)
 
     class Meta:
-        verbose_name = 'Инвайт'
-        verbose_name_plural = 'Инвайты'
+        verbose_name = 'Приглашение'
+        verbose_name_plural = 'Приглашения'
 
     author = models.ForeignKey(to=get_user_model(), on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now=True, db_index=True)
@@ -30,4 +30,5 @@ class Invite(SafeDeleteModel, models.Model):
     code = models.UUIDField(default=uuid.uuid4, editable=False)
     password_changed = models.BooleanField(default=False, verbose_name='Пароль изменён')
 
-
+    def __str__(self):
+        return self.email

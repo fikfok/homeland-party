@@ -2,76 +2,74 @@
 {% load static %}
 
 {% block container %}
-        <div id="content">
-            {% block content %}
-                <h1>Приглашения</h1>
+    {% block content %}
+        <h1>Приглашения</h1>
 
-                <div class="row">
-                    <div class="col-md-4">
-                        <h3>Статистика приглашений:</h3>
-                        <ul class="list-group">
-                          <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Вы выслали приглашений всего:
-                            <span class="badge bg-primary rounded-pill">{{ send_invites_qs|length }}</span>
-                          </li>
-                          <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Ваш лимит:
-                            <span class="badge bg-primary rounded-pill">{{ invites_limit }}</span>
-                          </li>
-                          <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Вы ещё можете пригласить:
-                            <span class="badge bg-primary rounded-pill">{{ invites_remainder }}</span>
-                          </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div id="invites" class="row">
-                    {% if show_form %}
-                        <section class="col-md-5">
-                            <h3>Выслать приглашение</h3>
-                            <form method="post" >
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="d-grid gap-1">
-                                      <div class="p-2">{{ invite_form.email }}</div>
-                                      <div class="p-2">
-                                          <input type="submit" value="Выслать" class="btn btn-primary">
-                                      </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </section>
-                    {% endif %}
-                    <section class="col-md-7">
-                        <h3>Ранее высланые инвайты</h3>
-                        <table class="table">
-                          <thead>
-                            <tr>
-                              <th scope="col">#</th>
-                              <th scope="col">Email</th>
-                              <th scope="col">Дата отправки</th>
-                              <th scope="col">Активирован</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for invite in send_invites_qs %}
-                                <tr>
-                                  <th scope="row">{{ forloop.counter }}</th>
-                                  <td>{{ invite.email }}</td>
-                                  <td>{{ invite.created_at|date:"d.m.Y" }}</td>
-                                  <td>
-                                      {% if invite.is_activated %}
-                                          <span class="badge badge-success"><i class="fas fa-check"></i></span>
-                                      {% else %}
-                                          <span class="badge badge-danger"><i class="fas fa-times"></i></span>
-                                      {% endif %}</td>
-                                </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
-                    </section>
-                </div>
-            {% endblock %}
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Статистика приглашений:</h3>
+                <ul class="list-group">
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Вы выслали приглашений всего:
+                    <span class="badge bg-primary rounded-pill">{{ send_invites_qs|length }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Ваш лимит:
+                    <span class="badge bg-primary rounded-pill">{{ invites_limit }}</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Вы ещё можете пригласить:
+                    <span class="badge bg-primary rounded-pill">{{ invites_remainder }}</span>
+                  </li>
+                </ul>
+            </div>
         </div>
+
+        <div id="invites" class="row">
+            {% if show_form %}
+                <section class="col-md-5">
+                    <h3>Выслать приглашение</h3>
+                    <form method="post" >
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="d-grid gap-1">
+                              <div class="p-2">{{ invite_form.email }}</div>
+                              <div class="p-2">
+                                  <input type="submit" value="Выслать" class="btn btn-primary">
+                              </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            {% endif %}
+            <section class="col-md-7">
+                <h3>Ранее высланые инвайты</h3>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Дата отправки</th>
+                      <th scope="col">Активирован</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for invite in send_invites_qs %}
+                        <tr>
+                          <th scope="row">{{ forloop.counter }}</th>
+                          <td>{{ invite.email }}</td>
+                          <td>{{ invite.created_at|date:"d.m.Y" }}</td>
+                          <td>
+                              {% if invite.is_activated %}
+                                  <span class="badge badge-success"><i class="fas fa-check"></i></span>
+                              {% else %}
+                                  <span class="badge badge-danger"><i class="fas fa-times"></i></span>
+                              {% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+            </section>
+        </div>
+    {% endblock %}
 {% endblock container %}

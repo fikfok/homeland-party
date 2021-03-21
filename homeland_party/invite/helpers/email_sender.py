@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import strip_tags
 
+from homeland_party.templates.const import SENDER_EMAIL, SMTP_SERVER, SMTP_PORT, SENDER_PASSWORD
 from invite.models import Invite
 
 
@@ -15,11 +16,6 @@ class EmailSender:
     """
     Отправляет email с приглашением
     """
-    PORT = 465
-    SENDER_EMAIL = 'fikfok' + '@' + 'mail.ru'
-    SENDER_PASSWORD = os.environ.get('SMTP_EMAIL_PASSOWRD')
-    SMTP_SERVER = 'smtp.mail.ru'
-
     def __init__(self, email: str, request):
         self.receiver_email = email
         self.request = request
@@ -32,7 +28,7 @@ class EmailSender:
         )
 
         msg = MIMEMultipart('alternative')
-        msg['From'] = self.SENDER_EMAIL
+        msg['From'] = SENDER_EMAIL
         msg['To'] = self.receiver_email
         msg['Subject'] = "Приглашение"
 
@@ -53,6 +49,6 @@ class EmailSender:
         msg.attach(part1)
 
         smtp_context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(self.SMTP_SERVER, self.PORT, context=smtp_context) as server:
-            server.login(self.SENDER_EMAIL, self.SENDER_PASSWORD)
-            server.sendmail(self.SENDER_EMAIL, self.receiver_email, msg.as_string())
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=smtp_context) as server:
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.sendmail(SENDER_EMAIL, self.receiver_email, msg.as_string())

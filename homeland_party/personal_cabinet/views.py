@@ -4,12 +4,13 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
 
+from homeland_party.templates.const import YANDEX_API_KEY, MAP_WIDTH_PX, MAP_HEIGHT_PX
 from invite.forms import InviteForm
 from invite.helpers.email_sender import EmailSender
 from invite.models import Invite
 
 
-class PersonalCabinetInvites(LoginRequiredMixin, TemplateView):
+class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
     login_url = '/login'
 
     def get(self, request, *args, **kwargs):
@@ -61,3 +62,15 @@ class PersonalCabinetInvites(LoginRequiredMixin, TemplateView):
     def _does_invite_exist_with_email(self, request) -> bool:
         email = request.POST.get('email', '')
         return Invite.objects.filter(email__iexact=email, is_activated=True).exists()
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    login_url = '/login'
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            'yandex_api_key': YANDEX_API_KEY,
+            'map_width': MAP_WIDTH_PX,
+            'map_height': MAP_HEIGHT_PX,
+        }
+        return render(request, 'profile.html', context=context)

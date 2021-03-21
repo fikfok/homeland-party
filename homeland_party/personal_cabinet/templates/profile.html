@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block styles %}
+    <style>
+        .yandex-map {
+            width: {{ map_width }}px;
+            height: {{ map_height }}px;
+        }
+
+    </style>
+{% endblock styles %}
+
 {% block scripts_head %}
     <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_api_key }}&lang=ru_RU" type="text/javascript">
     </script>
@@ -11,8 +21,8 @@
         {% block content %}
             <h1>Профиль</h1>
             <h2>Укажите, пожалуйста, Ваше местоположение:</h2>
-            <div id="map"></div>
-{#                <i class="fas fa-map-marker-alt" style="font-size:40px;color:red"></i>#}
+            <div id="map" class="yandex-map"></div>
+{#                <i class="fas fa-map-marker-alt yandex-map-marker" style="font-size:40px;color:red"></i>#}
 
 
         {% endblock %}
@@ -20,21 +30,24 @@
 
 {% block scripts %}
     <script type="text/javascript">
-        // Функция ymaps.ready() будет вызвана, когда
-        // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
         ymaps.ready(init);
-        function init(){
-            // Создание карты.
-            var myMap = new ymaps.Map("map", {
-                // Координаты центра карты.
-                // Порядок по умолчанию: «широта, долгота».
-                // Чтобы не определять координаты центра карты вручную,
-                // воспользуйтесь инструментом Определение координат.
-                center: [55.76, 37.64],
-                // Уровень масштабирования. Допустимые значения:
-                // от 0 (весь мир) до 19.
-                zoom: 7
-            });
+        var myMap,
+          myPlacemark;
+
+        function init() {
+          myMap = new ymaps.Map('map', {
+            {#center: [57.5262, 38.3061], // Углич#}
+            center: [55.76, 37.64], // Мск
+            zoom: 7
+          });
+
+          myPlacemark = new ymaps.Placemark();
+
+          myMap.events.add('click', function(e) {
+            myPlacemark.geometry.setCoordinates(e.get('coords')); // устанавливаем метке координаты, высчитанные из положения клика
+            myMap.geoObjects.add(myPlacemark); // ставим метку на карту
+          });
         }
+
     </script>
 {% endblock scripts %}

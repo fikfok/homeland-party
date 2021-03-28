@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import strip_tags
 
-from homeland_party.templates.const import SENDER_EMAIL, SMTP_SERVER, SMTP_PORT, SENDER_PASSWORD
+from homeland_party.const import SENDER_EMAIL, SMTP_SERVER, SMTP_PORT, SENDER_PASSWORD
 from invite.models import Invite
 
 

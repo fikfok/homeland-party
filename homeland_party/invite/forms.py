@@ -1,20 +1,21 @@
 from django import forms
-from django.contrib.auth.forms import SetPasswordForm
 from django.forms import EmailInput
 
 
 class InviteForm(forms.Form):
-    email = forms.EmailField(widget=EmailInput(attrs={'placeholder': "Email: email@domain.com"}))
+    email = forms.EmailField(
+        widget=EmailInput(attrs={'placeholder': "Email: email@domain.com", 'class': 'form-control'})
+    )
 
 
 class CustomSetPasswordForm(forms.Form):
     PASSWORD_MIN_LEN = 6
 
     new_password1 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )
     new_password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
     )
 
     def __init__(self, user, *args, **kwargs):

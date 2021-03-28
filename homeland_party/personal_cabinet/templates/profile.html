@@ -9,44 +9,105 @@
         }
 
     </style>
+    <link rel="stylesheet" href="{% static 'bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css' %}">
 {% endblock styles %}
 
 {% block scripts_head %}
-    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_api_key }}&lang=ru_RU" type="text/javascript">
-    </script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_api_key }}&lang=ru_RU" type="text/javascript"></script>
+    <script type="application/javascript" src="{% static 'moment.js/moment-with-locales.js' %}"></script>
+    <script type="application/javascript" src="{% static 'bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
 
 {% endblock scripts_head %}
 
 {% block container %}
         {% block content %}
             <h1>Профиль</h1>
-            <h2>Укажите, пожалуйста, Ваше местоположение:</h2>
-            <div id="map" class="yandex-map"></div>
-{#                <i class="fas fa-map-marker-alt yandex-map-marker" style="font-size:40px;color:red"></i>#}
+            <h3>Укажите, пожалуйста, Ваше данные:</h3>
+
+            <div class="row mt-3 mb-3">
+                <div>Ник:</div>
+                <div class="col-3">
+                    <div>{{ profile_form.username }}</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div>Имя:</div>
+                <div class="col-3">
+                    <div>{{ profile_form.first_name }}</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div>Фамилия:</div>
+                <div class="col-3">
+                    <div>{{ profile_form.last_name }}</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div>Дата рождения:</div>
+                <div class="col-3">
+                    <div>{{ profile_form.birth_date }}</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div>Ваше местоположение:</div>
+                <div class="col-md-6 mb-3">
+                    <div id="map" class="yandex-map"></div>
+                </div>
+                <div class="col-md-6">
+                    <textarea id="staticAddress" class="form-control m-1" type="text" readonly rows="2"></textarea>
+                </div>
+            </div>
 
 
         {% endblock %}
 {% endblock container %}
 
+
+
+
 {% block scripts %}
+
+    <script type="application/javascript">
+        $('.datetimepicker').each(function (index, item) {
+            $(item).datetimepicker({
+                locale: 'ru',
+                format: 'L'
+            });
+        })
+    </script>
+
     <script type="text/javascript">
         ymaps.ready(init);
-        var myMap,
-          myPlacemark;
+        var myMap, myPlacemark;
 
         function init() {
-          myMap = new ymaps.Map('map', {
-            {#center: [57.5262, 38.3061], // Углич#}
-            center: [55.76, 37.64], // Мск
-            zoom: 7
-          });
+            myMap = new ymaps.Map('map', {
+                center: [55.76, 37.64], // Мск
+                zoom: 7
+            });
 
-          myPlacemark = new ymaps.Placemark();
+            myPlacemark = new ymaps.Placemark();
 
-          myMap.events.add('click', function(e) {
-            myPlacemark.geometry.setCoordinates(e.get('coords')); // устанавливаем метке координаты, высчитанные из положения клика
-            myMap.geoObjects.add(myPlacemark); // ставим метку на карту
-          });
+            myMap.events.add('click', function(e) {
+                var staticAddressControl = $("#staticAddress");
+                console.log(e.get('coords'))
+
+                myPlacemark.geometry.setCoordinates(e.get('coords')); // устанавливаем метке координаты, высчитанные из положения клика
+                myMap.geoObjects.add(myPlacemark); // ставим метку на карту
+
+                var la = e.get('coords')[0];
+                var lo = e.get('coords')[1];
+                var url = `{% url "personal_cabinet:geocode" %}?geocode=${lo},${la}`
+                $.get(
+                    url,
+                    function(data) {
+                        staticAddressControl.val(data);
+                    }
+                ).fail(function(response) {
+                    staticAddressControl.val(response.responseText);
+                })
+            });
         }
 
     </script>

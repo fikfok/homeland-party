@@ -2,12 +2,20 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.views import View
 from django.views.generic import TemplateView
 
-from homeland_party.templates.const import YANDEX_API_KEY, MAP_WIDTH_PX, MAP_HEIGHT_PX
+from homeland_party.const import YANDEX_API_KEY, MAP_WIDTH_PX, MAP_HEIGHT_PX
+
 from invite.forms import InviteForm
 from invite.helpers.email_sender import EmailSender
 from invite.models import Invite
+from personal_cabinet.forms import GeoForm, ProfileForm
+from personal_cabinet.helpers.geocoder import Geocoder
+
+
+# Реализован с кешем, потому объявлять надо глобально
+geocoder = Geocoder()
 
 
 class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
@@ -68,9 +76,32 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     login_url = '/login'
 
     def get(self, request, *args, **kwargs):
+        profile_form = ProfileForm()
+
         context = {
+            'profile_form': profile_form,
             'yandex_api_key': YANDEX_API_KEY,
             'map_width': MAP_WIDTH_PX,
             'map_height': MAP_HEIGHT_PX,
         }
         return render(request, 'profile.html', context=context)
+
+
+class GeoCodeView(LoginRequiredMixin, View):
+    login_url = '/login'
+
+    def get(self, request, *args, **kwargs):
+        geocode = request.GET.get('geocode', '')
+        geo_data = geocoder.get_geo_data(geocode=geocode)
+        geo_form = GeoForm(geo_data)
+        if geo_data and geo_form.is_valid():
+            geo_form.save()
+            result = str(geo_form.instance)
+            status = 200
+        else:
+            result = (
+                'Нельзя определить адрес по данным координатам. '
+                'Попробуйте, пожалуйста, выбрать координаты ближе к населённому пункту.'
+            )
+            status = 400
+        return HttpResponse(result, status=status)

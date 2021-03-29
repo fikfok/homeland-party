@@ -25,7 +25,7 @@
             <h3>Укажите, пожалуйста, Ваше данные:</h3>
 
             <div class="row mt-3 mb-3">
-                <div>Ник:</div>
+                <div>Ник (подпись под сообщениями):</div>
                 <div class="col-3">
                     <div>{{ profile_form.username }}</div>
                 </div>
@@ -45,7 +45,12 @@
             <div class="row mb-3">
                 <div>Дата рождения:</div>
                 <div class="col-3">
-                    <div>{{ profile_form.birth_date }}</div>
+                    <div class="input-group">
+                        {{ profile_form.birth_date }}
+                        <label class="input-group-addon btn" for="id_birth_date" style="line-height: 1.3;">
+                           <span class="fa fa-calendar open-datetimepicker"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -63,18 +68,13 @@
         {% endblock %}
 {% endblock container %}
 
-
-
-
 {% block scripts %}
 
     <script type="application/javascript">
-        $('.datetimepicker').each(function (index, item) {
-            $(item).datetimepicker({
-                locale: 'ru',
-                format: 'L'
-            });
-        })
+        $('#id_birth_date').datetimepicker({
+            locale: 'ru',
+            format: 'L'
+        });
     </script>
 
     <script type="text/javascript">

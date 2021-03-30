@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from personal_cabinet.helpers.geocoder import Geocoder
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'g&!*mlf--083zecdr3sfqyb!4(oh75%$p@&f=0ukl+&agjm2gb'
@@ -98,3 +100,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+# Реализован с кешем, потому объявлять надо глобально. Можно было сделат и синглтоном
+geocoder = Geocoder()

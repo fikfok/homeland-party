@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.template import RequestContext
 from django.views import generic
 
@@ -23,8 +24,8 @@ class LoginPage(generic.TemplateView):
     def post(self, request, *args, **kwargs):
         form = LoginForm(request.POST)
         if form.is_valid():
-            cd = form.cleaned_data
-            user = authenticate(username=cd['username'], password=cd['password'])
+            cleaned_data = form.cleaned_data
+            user = self._authenticate(email=cleaned_data['email'], password=cleaned_data['password'])
             if user is not None:
                 if user.is_active:
                     login(request, user)
@@ -35,3 +36,14 @@ class LoginPage(generic.TemplateView):
                 return HttpResponse('Неверный логин')
         else:
             return HttpResponse('Неверная дата')
+
+    def _authenticate(self, email: str, password: str):
+        default_user = None
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            user = default_user
+        else:
+            if not user.check_password(password):
+                user = default_user
+        return user

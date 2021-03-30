@@ -17,7 +17,7 @@
             {% csrf_token %}
                 <div class="row mt-3 mb-3">
                     <div>Пароль (не менее {{ password_min_len }} символов):</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div>{{ form.new_password1 }}</div>
                     </div>
                     {% if form.new_password1.errors %}
@@ -28,7 +28,7 @@
                 </div>
                 <div class="row mb-3">
                     <div>Подтвердите, пожалуйста, пароль (не менее {{ password_min_len }} символов):</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div>{{ form.new_password2 }}</div>
                     </div>
                     {% if form.new_password2.errors %}

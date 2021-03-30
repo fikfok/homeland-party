@@ -27,25 +27,25 @@
                 {% csrf_token %}
                 <div class="row mt-3 mb-3">
                     <div>Ник (подпись под сообщениями):</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div>{{ profile_form.user_name }}</div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div>Имя:</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div>{{ profile_form.first_name }}</div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div>Фамилия:</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div>{{ profile_form.last_name }}</div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div>Дата рождения:</div>
-                    <div class="col-3">
+                    <div class="col-md-3">
                         <div class="input-group">
                             {{ profile_form.birth_date }}
                             <label class="input-group-addon btn" for="id_birth_date" style="line-height: 1.3;">

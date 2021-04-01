@@ -1,12 +1,47 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from veche.models import Community
+
+
+class Profile(models.Model):
+    MAX_INVITES_DEFAULT = 5
+
+    class Meta:
+        verbose_name = 'Профиль'
+        verbose_name_plural = 'Профили'
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    birth_date = models.DateField(verbose_name='Дата рождения', null=True, blank=True)
+    max_invites = models.IntegerField(verbose_name='Максимальное количество приглашений', default=MAX_INVITES_DEFAULT)
+    geo_community = models.ManyToManyField(to=Community, related_name='geo_community', null=True, blank=True)
+
+    def __str__(self):
+        return self.user.email
+
+    def user_can_create_community(self) -> bool:
+        user_not_in_geo_community = not self.user_in_geo_community()
+        user_can_create_community = False
+        if self.geo_exists() and user_not_in_geo_community:
+            user_can_create_community = True
+        return user_can_create_community
+
+    def user_in_geo_community(self) -> bool:
+        return self.geo_community.all().exists()
+
+    def geo_exists(self) -> bool:
+        return self.geo.all().exists()
+
+    def get_geo(self):
+        return self.geo.all().first() if self.geo_exists() else None
+
 
 class Geo(models.Model):
     class Meta:
         verbose_name = 'Гео'
         verbose_name_plural = 'Гео'
 
+    profile = models.ForeignKey(Profile, related_name="geo", on_delete=models.CASCADE)
     postal_code = models.CharField(verbose_name='Почтовый индекс', max_length=10, null=True, blank=True)
     country = models.CharField(verbose_name='Страна', max_length=300, null=True, blank=True)
     country_iso_code = models.CharField(verbose_name='ISO код страны', max_length=5, null=True, blank=True)
@@ -59,19 +94,3 @@ class Geo(models.Model):
         labels = [lbl for lbl in labels if lbl]
         labels = ', '.join(labels)
         return labels
-
-
-class Profile(models.Model):
-    MAX_INVITES_DEFAULT = 5
-
-    class Meta:
-        verbose_name = 'Профиль'
-        verbose_name_plural = 'Профили'
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    birth_date = models.DateField(verbose_name='Дата рождения', null=True, blank=True)
-    geo = models.ForeignKey(Geo, related_name='geo', on_delete=models.CASCADE, null=True, blank=True)
-    max_invites = models.IntegerField(verbose_name='Максимальное количество приглашений', default=MAX_INVITES_DEFAULT)
-
-    def __str__(self):
-        return self.user.email

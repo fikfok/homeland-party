@@ -13,7 +13,7 @@ from invite.forms import InviteForm
 from invite.helpers.email_sender import EmailSender
 from invite.models import Invite
 from personal_cabinet.forms import GeoForm, ProfileForm
-from personal_cabinet.models import Profile
+from personal_cabinet.models import Profile, Geo
 
 
 class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
@@ -76,18 +76,19 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
-        geo = profile.geo if profile else None
+        geo = Geo.objects.filter(profile=profile).first() if profile else None
         data = {
             'user_name': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'latitude': geo.geo_lat if profile and geo else DEFAULT_LAT,
-            'longitude': geo.geo_lon if profile and geo else DEFAULT_LON,
+            'latitude': geo.geo_lat if geo else DEFAULT_LAT,
+            'longitude': geo.geo_lon if geo else DEFAULT_LON,
             'birth_date': profile.birth_date.strftime("%d.%m.%Y") if profile and profile.birth_date else None
         }
         profile_form = ProfileForm(data)
 
         context = {
+            'user': user,
             'profile_form': profile_form,
             'yandex_api_key': YANDEX_API_KEY,
             'map_width': MAP_WIDTH_PX,
@@ -118,19 +119,18 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             longitude = profile_form.cleaned_data.get('longitude')
             if latitude and longitude:
                 # Если пришли координаты, то удаляем старый адрес если он есть
-                if profile.geo:
-                    profile.geo.delete()
+                if profile.geo_exists():
+                    profile.geo.all().delete()
                 geo_data = geocoder.get_geo_data(latitude=latitude, longitude=longitude)
+                geo_data['profile'] = profile.pk
                 geo_form = GeoForm(geo_data)
-                geo = geo_form.save()
-                profile.geo = geo
-
+                geo_form.save()
             profile.save()
-
         else:
             profile = Profile.objects.get(user=user)
             geo = profile.geo if profile else None
             context = {
+                'user': user,
                 'profile_form': profile_form,
                 'yandex_api_key': YANDEX_API_KEY,
                 'map_width': MAP_WIDTH_PX,
@@ -147,8 +147,11 @@ class GeoCodeView(LoginRequiredMixin, View):
     login_url = '/login'
 
     def get(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.get(user=user)
         geocode = request.GET.get('geocode', '')
         geo_data = geocoder.get_geo_data(geocode=geocode)
+        geo_data['profile'] = profile.pk
         geo_form = GeoForm(geo_data)
         if geo_data and geo_form.is_valid():
             result = str(geo_form.instance)

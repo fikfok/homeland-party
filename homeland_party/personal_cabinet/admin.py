@@ -4,4 +4,3 @@ from .models import Profile, Geo
 
 admin.site.register(Profile)
 admin.site.register(Geo)
-

@@ -23,9 +23,12 @@
         {% block content %}
             <h1>Профиль</h1>
             <h3>Укажите, пожалуйста, Ваше данные:</h3>
+            <div class="row mt-3 mb-3">
+                <div>Ваш email: <strong>{{ user.email }}</strong></div>
+            </div>
             <form method="post">
                 {% csrf_token %}
-                <div class="row mt-3 mb-3">
+                <div class="row mb-3">
                     <div>Ник (подпись под сообщениями):</div>
                     <div class="col-md-3">
                         <div>{{ profile_form.user_name }}</div>

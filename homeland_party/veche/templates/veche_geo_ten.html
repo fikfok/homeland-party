@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block container %}
+        <div id="content">
+            {% block content %}
+                <h1>Создать географическую десятку</h1>
+                {% if user_can_create_community %}
+                    {% csrf_token %}
+                    <p>Вы можете создать только одну десятку. У неё будут Ваши <a href="{% url 'personal_cabinet:profile' %}">географические координаты и адрес</a>.</p>
+                    <p>Широта: {{ geo.geo_lon }}&deg;</p>
+                    <p>Долгота: {{ geo.geo_lat }}&deg;</p>
+                    <p>Адрес: {{ address_text }}</p>
+                    <button id="createTen" type="button" class="btn btn-primary">Создать десятку</button>
+                {% else %}
+                    {% if not geo %}
+                        <p>Вы не указали своё местоположение. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
+                        укажите своё геограгфическое положение.</p>
+                    {% endif %}
+                    {% if user_in_geo_community %}
+                        <p>Вы уже состоите в географической десятке. Чтобы создано новую необходимо выйти из своей
+                            географической десятки.</p>
+                    {% endif %}
+
+                {% endif %}
+            {% endblock %}
+        </div>
+{% endblock container %}
+
+
+{% block scripts %}
+
+    <script type="application/javascript">
+        {% if user_can_create_community %}
+            $("#createTen").click(function() {
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                        xhr.setRequestHeader('X-CSRFToken', key);
+                    }
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'veche:geo_ten' %}',
+                    data: {},
+                    success: function (response) {
+                        console.log('good');
+                    },
+                    error: function (response) {
+                        console.log('bad');
+                    }
+                })
+
+            });
+        {% endif %}
+
+    </script>
+{% endblock scripts %}

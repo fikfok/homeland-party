@@ -31,4 +31,4 @@ class Invite(SafeDeleteModel, models.Model):
     password_changed = models.BooleanField(default=False, verbose_name='Пароль изменён')
 
     def __str__(self):
-        return self.email
+        return f'{self.email} ({self.code})'

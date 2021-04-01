@@ -37,7 +37,7 @@ class GeoTenView(LoginRequiredMixin, TemplateView):
             status = 200
         else:
             status = 400
-        return HttpResponse(status)
+        return HttpResponse(status=status)
 
     def _can_create_ten(self, request):
         user = request.user

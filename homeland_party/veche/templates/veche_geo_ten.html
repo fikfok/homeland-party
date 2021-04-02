@@ -52,6 +52,13 @@
 
     <script type="application/javascript">
         {% if user_can_create_community %}
+            var redirectURL;
+
+            $('#tenHasBeenCreatedModal').on('hidden.bs.modal', function () {
+                if (redirectURL) {
+                    window.location.replace(redirectURL);
+                }
+            });
 
             $('#tenHasBeenCreatedClose').on('click', function(event) {
                 $('#tenHasBeenCreatedModal').modal('hide');
@@ -74,6 +81,7 @@
                     url: '{% url 'veche:geo_ten' %}',
                     data: {},
                     success: function (response) {
+                        redirectURL = response.redirect_url;
                         $('#modalMessage').text('Десятка успешно создана');
                         $('#tenHasBeenCreatedModalHeader').removeClass('bg-danger');
                         $('#tenHasBeenCreatedModal').modal('show');

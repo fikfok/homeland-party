@@ -1,20 +1,20 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.template import RequestContext
-from django.views import generic
+from django.views.generic import TemplateView
 
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from .forms import LoginForm
+from .mixins import CustomTemplateViewMixin
 
 
-class HomePage(LoginRequiredMixin, generic.TemplateView, RequestContext):
-    login_url = '/login'
+class HomePage(CustomTemplateViewMixin, TemplateView, RequestContext):
     template_name = 'home.html'
 
 
-class LoginPage(generic.TemplateView):
+class LoginPage(TemplateView):
     template_name = 'login.html'
 
     def get(self, request, *args, **kwargs):

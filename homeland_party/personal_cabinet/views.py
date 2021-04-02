@@ -7,6 +7,7 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from homeland_party.const import YANDEX_API_KEY, MAP_WIDTH_PX, MAP_HEIGHT_PX, DEFAULT_LAT, DEFAULT_LON
+from homeland_party.mixins import CustomTemplateViewMixin
 from homeland_party.settings import geocoder
 
 from invite.forms import InviteForm
@@ -16,8 +17,7 @@ from personal_cabinet.forms import GeoForm, ProfileForm
 from personal_cabinet.models import Profile, Geo
 
 
-class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
-    login_url = '/login'
+class PersonalCabinetInvitesView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
@@ -32,13 +32,15 @@ class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
             show_form = user.profile.max_invites - send_invites_qs.count() > 0
 
         form = InviteForm()
-        context = {
+        context = self.get_context_data(request=request)
+        extra_context = {
             'invite_form': form,
             'send_invites_qs': send_invites_qs,
             'invites_limit': invites_limit,
             'invites_remainder': invites_remainder,
             'show_form': show_form,
         }
+        context.update(extra_context)
         return render(request, 'invite/invite_section.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -70,10 +72,28 @@ class PersonalCabinetInvitesView(LoginRequiredMixin, TemplateView):
         return Invite.objects.filter(email__iexact=email, is_activated=True).exists()
 
 
-class ProfileView(LoginRequiredMixin, TemplateView):
-    login_url = '/login'
+class ProfileView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.filter(user=user).first()
+        geo = Geo.objects.filter(profile=profile).first() if profile else None
+        profile_form = self._generate_profile_form(request)
+
+        context = self.get_context_data(request=request)
+        extra_context = {
+            'user': user,
+            'profile_form': profile_form,
+            'yandex_api_key': YANDEX_API_KEY,
+            'map_width': MAP_WIDTH_PX,
+            'map_height': MAP_HEIGHT_PX,
+            'address_text': str(geo) if geo else '',
+            'geo_exists': True if geo else False,
+        }
+        context.update(extra_context)
+        return render(request, 'profile.html', context=context)
+
+    def _generate_profile_form(self, request):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
         geo = Geo.objects.filter(profile=profile).first() if profile else None
@@ -86,17 +106,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
             'birth_date': profile.birth_date.strftime("%d.%m.%Y") if profile and profile.birth_date else None
         }
         profile_form = ProfileForm(data)
-
-        context = {
-            'user': user,
-            'profile_form': profile_form,
-            'yandex_api_key': YANDEX_API_KEY,
-            'map_width': MAP_WIDTH_PX,
-            'map_height': MAP_HEIGHT_PX,
-            'address_text': str(geo) if geo else '',
-            'geo_exists': True if geo else False,
-        }
-        return render(request, 'profile.html', context=context)
+        return profile_form
 
     def post(self, request, *args, **kwargs):
         profile_form = ProfileForm(request.POST)
@@ -143,8 +153,7 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         return HttpResponseRedirect(reverse('personal_cabinet:profile'))
 
 
-class GeoCodeView(LoginRequiredMixin, View):
-    login_url = '/login'
+class GeoCodeView(CustomTemplateViewMixin, View):
 
     def get(self, request, *args, **kwargs):
         user = request.user

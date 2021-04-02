@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -6,6 +7,7 @@ from django.views.generic import TemplateView
 
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models import Profile
+from veche.models import Community
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -35,6 +37,20 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
         profile = Profile.objects.filter(user=user).first()
         user_can_create_community = profile.user_can_create_community()
         if user_can_create_community:
+            community_data = {
+                'author': user,
+                'type': Community.COMMUNITY_TYPE_TEN_KEY,
+                'max_participants': Community.MAX_PARTICIPANTS[Community.COMMUNITY_TYPE_TEN_KEY],
+            }
+            community = Community.objects.create(**community_data)
+            community_geo = profile.get_geo()
+            community_geo.pk = None
+            community_geo.object_type = ContentType.objects.get_for_model(Community)
+            community_geo.object_id = community.pk
+            community_geo.save()
+            profile.geo_community.add(community)
+            profile.save()
+
             redirect_url = request.build_absolute_uri(reverse('veche:my_geo_ten'))
             data = {'redirect_url': redirect_url}
             return JsonResponse(data, status=200)
@@ -47,4 +63,14 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
 
 
 class MyGeoTenView(CustomTemplateViewMixin, TemplateView):
-    template_name = 'veche_my_geo_ten.html'
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.filter(user=user).first()
+        user_in_geo_community = profile.user_in_geo_community()
+        context = self.get_context_data(request=request)
+        extra_context = {
+            'user_in_geo_community': user_in_geo_community,
+        }
+        context.update(extra_context)
+        return render(request, 'veche_my_geo_ten.html', context=context)

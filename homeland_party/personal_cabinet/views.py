@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -77,7 +78,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
-        geo = Geo.objects.filter(profile=profile).first() if profile else None
+        geo = profile.get_geo()
         profile_form = self._generate_profile_form(request)
 
         context = self.get_context_data(request=request)
@@ -96,7 +97,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
     def _generate_profile_form(self, request):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
-        geo = Geo.objects.filter(profile=profile).first() if profile else None
+        geo = profile.get_geo()
         data = {
             'user_name': user.username,
             'first_name': user.first_name,
@@ -112,30 +113,9 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         profile_form = ProfileForm(request.POST)
         user = request.user
         if profile_form.is_valid():
-
-            user.username = profile_form.cleaned_data['user_name']
-            user.first_name = profile_form.cleaned_data['first_name']
-            user.last_name = profile_form.cleaned_data['last_name']
-            user.save()
-
-            profile = Profile.objects.get(user=user)
-            birth_date = profile_form.cleaned_data['birth_date']
-            if birth_date:
-                profile.birth_date = profile_form.cleaned_data['birth_date']
-            else:
-                profile.birth_date = None
-
-            latitude = profile_form.cleaned_data.get('latitude')
-            longitude = profile_form.cleaned_data.get('longitude')
-            if latitude and longitude:
-                # Если пришли координаты, то удаляем старый адрес если он есть
-                if profile.geo_exists():
-                    profile.geo.all().delete()
-                geo_data = geocoder.get_geo_data(latitude=latitude, longitude=longitude)
-                geo_data['profile'] = profile.pk
-                geo_form = GeoForm(geo_data)
-                geo_form.save()
-            profile.save()
+            self._update_user(profile_form, user)
+            self._update_profile(profile_form, user)
+            response = HttpResponseRedirect(reverse('personal_cabinet:profile'))
         else:
             profile = Profile.objects.get(user=user)
             geo = profile.geo if profile else None
@@ -149,8 +129,37 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
                 'longitude': geo.geo_lon if profile and geo else DEFAULT_LON,
                 'address_text': str(geo) if geo else ''
             }
-            return render(request, 'profile.html', context=context)
-        return HttpResponseRedirect(reverse('personal_cabinet:profile'))
+            response = render(request, 'profile.html', context=context)
+        return response
+
+    def _update_profile(self, profile_form, user):
+        profile = Profile.objects.get(user=user)
+        birth_date = profile_form.cleaned_data['birth_date']
+        if birth_date:
+            profile.birth_date = profile_form.cleaned_data['birth_date']
+        else:
+            profile.birth_date = None
+        self._update_geo(profile, profile_form)
+        profile.save()
+
+    def _update_geo(self, profile, profile_form):
+        latitude = profile_form.cleaned_data.get('latitude')
+        longitude = profile_form.cleaned_data.get('longitude')
+        if latitude and longitude:
+            # Если пришли координаты, то удаляем старый адрес если он есть
+            if profile.geo_exists():
+                profile.geo.all().delete()
+            geo_data = geocoder.get_geo_data(latitude=latitude, longitude=longitude)
+            geo_data['object_type'] = ContentType.objects.get_for_model(Profile)
+            geo_data['object_id'] = profile.pk
+            geo_form = GeoForm(geo_data)
+            geo_form.save()
+
+    def _update_user(self, profile_form, user):
+        user.username = profile_form.cleaned_data['user_name']
+        user.first_name = profile_form.cleaned_data['first_name']
+        user.last_name = profile_form.cleaned_data['last_name']
+        user.save()
 
 
 class GeoCodeView(CustomTemplateViewMixin, View):
@@ -160,7 +169,8 @@ class GeoCodeView(CustomTemplateViewMixin, View):
         profile = Profile.objects.get(user=user)
         geocode = request.GET.get('geocode', '')
         geo_data = geocoder.get_geo_data(geocode=geocode)
-        geo_data['profile'] = profile.pk
+        geo_data['object_type'] = ContentType.objects.get_for_model(Profile)
+        geo_data['object_id'] = profile.pk
         geo_form = GeoForm(geo_data)
         if geo_data and geo_form.is_valid():
             result = str(geo_form.instance)

@@ -5,6 +5,11 @@
         <div id="content">
             {% block content %}
                 <h1>Моя географическая десятка</h1>
+                {% if user_in_geo_community  %}
+                    <p>Вы состоите в географической десятке.</p>
+                {% else %}
+                    <p>Вы пока не состоите в географической десятке.</p>
+                {% endif %}
             {% endblock %}
         </div>
 {% endblock container %}

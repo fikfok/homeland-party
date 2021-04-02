@@ -1,3 +1,4 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -30,10 +31,12 @@ class Profile(models.Model):
         return self.geo_community.all().exists()
 
     def geo_exists(self) -> bool:
-        return self.geo.all().exists()
+        object_type = ContentType.objects.get_for_model(Profile)
+        return Geo.objects.filter(object_type=object_type, object_id=self.pk).exists()
 
     def get_geo(self):
-        return self.geo.all().first() if self.geo_exists() else None
+        object_type = ContentType.objects.get_for_model(Profile)
+        return Geo.objects.filter(object_type=object_type, object_id=self.pk).first() if self.geo_exists() else None
 
 
 class Geo(models.Model):
@@ -41,7 +44,9 @@ class Geo(models.Model):
         verbose_name = 'Гео'
         verbose_name_plural = 'Гео'
 
-    profile = models.ForeignKey(Profile, related_name="geo", on_delete=models.CASCADE)
+    object_type = models.ForeignKey(verbose_name='Тип сущности', to=ContentType, related_name='related_object_type',
+                                    on_delete=models.DO_NOTHING, null=True, blank=True)
+    object_id = models.PositiveIntegerField(verbose_name='ID сущности', null=True, blank=True)
     postal_code = models.CharField(verbose_name='Почтовый индекс', max_length=10, null=True, blank=True)
     country = models.CharField(verbose_name='Страна', max_length=300, null=True, blank=True)
     country_iso_code = models.CharField(verbose_name='ISO код страны', max_length=5, null=True, blank=True)

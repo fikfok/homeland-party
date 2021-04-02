@@ -12,5 +12,8 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
         if request:
             user = request.user
             profile = Profile.objects.filter(user=user).first()
-            context['user_in_geo_ten'] = profile.user_in_geo_community() if profile else False
+            context = {
+                'user': user,
+                'profile': profile if profile else None,
+            }
         return context

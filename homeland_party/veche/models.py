@@ -25,4 +25,7 @@ class Community(SafeDeleteModel, models.Model):
     max_participants = models.PositiveIntegerField(verbose_name="Максимальное количество дочерних элементов")
 
     def __str__(self):
-        return f'{self.type.capitalize()}. Автор: {self.author.username} ({self.author.pk})'
+        community_labels = {k: v for k, v in self.COMMUNITY_TYPE_CHOICES}
+        current_label = community_labels[self.type]
+        current_label = current_label.capitalize()
+        return f'{current_label}. Автор: {self.author.username} (id = {self.author.pk})'

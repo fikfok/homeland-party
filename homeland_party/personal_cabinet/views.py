@@ -33,7 +33,7 @@ class PersonalCabinetInvitesView(CustomTemplateViewMixin, TemplateView):
             show_form = user.profile.max_invites - send_invites_qs.count() > 0
 
         form = InviteForm()
-        context = self.get_context_data(request=request)
+        context = self.get_context_data()
         extra_context = {
             'invite_form': form,
             'send_invites_qs': send_invites_qs,
@@ -81,7 +81,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         geo = profile.get_geo()
         profile_form = self._generate_profile_form(request)
 
-        context = self.get_context_data(request=request)
+        context = self.get_context_data()
         extra_context = {
             'user': user,
             'profile_form': profile_form,

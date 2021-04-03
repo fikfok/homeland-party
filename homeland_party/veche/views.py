@@ -21,12 +21,10 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
         profile = Profile.objects.filter(user=user).first()
         geo = profile.get_geo()
         user_can_create_community = profile.user_can_create_community()
-        user_in_geo_community = profile.user_in_geo_community()
-        context = self.get_context_data(request=request)
+        context = self.get_context_data()
         extra_context = {
             'geo': geo,
             'user_can_create_community': user_can_create_community,
-            'user_in_geo_community': user_in_geo_community,
             'address_text': str(geo) if geo else '',
         }
         context.update(extra_context)
@@ -65,12 +63,5 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
 class MyGeoTenView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        profile = Profile.objects.filter(user=user).first()
-        user_in_geo_community = profile.user_in_geo_community()
-        context = self.get_context_data(request=request)
-        extra_context = {
-            'user_in_geo_community': user_in_geo_community,
-        }
-        context.update(extra_context)
+        context = self.get_context_data()
         return render(request, 'veche_my_geo_ten.html', context=context)

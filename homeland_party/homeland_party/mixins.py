@@ -8,12 +8,12 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
 
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
-        request = context.get('request')
-        if request:
-            user = request.user
-            profile = Profile.objects.filter(user=user).first()
-            context = {
-                'user': user,
-                'profile': profile if profile else None,
-            }
+        user = self.request.user
+        profile = Profile.objects.filter(user=user).first()
+        extra_context = {
+            'user': user,
+            'profile': profile if profile else None,
+            'user_in_geo_community': profile.user_in_geo_community() if profile else False,
+        }
+        context.update(extra_context)
         return context

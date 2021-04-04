@@ -15,7 +15,8 @@ from invite.forms import InviteForm
 from invite.helpers.email_sender import EmailSender
 from invite.models import Invite
 from personal_cabinet.forms import GeoForm, ProfileForm
-from personal_cabinet.models import Profile, Geo
+from personal_cabinet.models import Profile
+from personal_cabinet.model_geo import Geo
 
 
 class PersonalCabinetInvitesView(CustomTemplateViewMixin, TemplateView):

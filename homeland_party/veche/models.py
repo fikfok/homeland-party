@@ -2,8 +2,10 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from safedelete.models import SafeDeleteModel
 
+from personal_cabinet.geo_mixin import GeoMixin
 
-class Community(SafeDeleteModel, models.Model):
+
+class Community(GeoMixin, SafeDeleteModel, models.Model):
     COMMUNITY_TYPE_TEN_KEY = 'ten'
     COMMUNITY_TYPE_TEN_LABEL = 'десятка'
 
@@ -24,8 +26,13 @@ class Community(SafeDeleteModel, models.Model):
     type = models.CharField(verbose_name='Тип сообщества', choices=COMMUNITY_TYPE_CHOICES, max_length=50)
     max_participants = models.PositiveIntegerField(verbose_name="Максимальное количество дочерних элементов")
 
-    def __str__(self):
+    def get_community_label(self):
         community_labels = {k: v for k, v in self.COMMUNITY_TYPE_CHOICES}
         current_label = community_labels[self.type]
         current_label = current_label.capitalize()
-        return f'{current_label}. Автор: {self.author.username} (id = {self.author.pk})'
+        return current_label
+
+    def __str__(self):
+        geo = self.get_geo()
+        current_label = self.get_community_label()
+        return f'{current_label}. Адрес: {str(geo)}'

@@ -57,7 +57,17 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
 
 
 class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
-    template_name = 'veche_join_geo_ten.html'
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        profile = Profile.objects.filter(user=user).first()
+        geo = profile.get_geo()
+        context = self.get_context_data()
+        extra_context = {
+            'geo': geo,
+        }
+        context.update(extra_context)
+        return render(request, 'veche_join_geo_ten.html', context=context)
 
 
 class MyGeoTenView(CustomTemplateViewMixin, TemplateView):

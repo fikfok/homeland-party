@@ -6,7 +6,7 @@ from django.utils.html import escape
 
 from homeland_party.const import DEFAULT_LAT, DEFAULT_LON
 from homeland_party.settings import geocoder
-from personal_cabinet.models import Geo
+from personal_cabinet.model_geo import Geo
 
 
 class GeoForm(ModelForm):

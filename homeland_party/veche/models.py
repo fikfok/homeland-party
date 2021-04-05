@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from safedelete.models import SafeDeleteModel
 
-from personal_cabinet.geo_mixin import GeoMixin
+from personal_cabinet.mixins.geo_mixin import GeoMixin
 
 
 class Community(GeoMixin, SafeDeleteModel, models.Model):

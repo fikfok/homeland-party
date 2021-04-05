@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from personal_cabinet.models import Profile
+from personal_cabinet.models.models import Profile
 
 
 class CustomTemplateViewMixin(LoginRequiredMixin):

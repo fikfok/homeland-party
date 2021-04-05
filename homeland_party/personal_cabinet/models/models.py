@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from personal_cabinet.geo_mixin import GeoMixin
+from personal_cabinet.mixins.geo_mixin import GeoMixin
 from veche.models import Community
 
 

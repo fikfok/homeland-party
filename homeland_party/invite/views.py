@@ -11,7 +11,7 @@ from django.views.generic import TemplateView
 
 from invite.forms import CustomSetPasswordForm
 from invite.models import Invite
-from personal_cabinet.models import Profile
+from personal_cabinet.models.models import Profile
 
 
 class ActivateInvite(TemplateView):

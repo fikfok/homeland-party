@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import migrations, models
 
-from personal_cabinet.models import Profile
+from personal_cabinet.models.models import Profile
 
 
 def create_profiles(apps, schema_editor):

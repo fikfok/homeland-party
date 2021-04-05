@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 
-from .models import Profile
-from .model_geo import Geo
+from .models.models import Profile
+from .models.model_geo import Geo
 
 
 @admin.register(Geo)

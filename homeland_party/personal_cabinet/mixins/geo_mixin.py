@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 
-from personal_cabinet.model_geo import Geo
+from personal_cabinet.models.model_geo import Geo
 
 
 class GeoMixin:

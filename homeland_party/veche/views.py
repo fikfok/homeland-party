@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from homeland_party.mixins import CustomTemplateViewMixin
-from personal_cabinet.models import Profile
+from personal_cabinet.models.models import Profile
 from veche.models import Community
 
 

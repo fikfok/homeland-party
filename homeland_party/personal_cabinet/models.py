@@ -18,7 +18,7 @@ class Profile(GeoMixin, models.Model):
     geo_community = models.ManyToManyField(to=Community, related_name='geo_community', null=True, blank=True)
 
     def __str__(self):
-        return self.user.email
+        return f'{self.user.email}'
 
     def user_can_create_community(self) -> bool:
         user_not_in_geo_community = not self.user_in_geo_community()

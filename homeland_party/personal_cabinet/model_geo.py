@@ -62,16 +62,3 @@ class Geo(models.Model):
         labels = [lbl for lbl in labels if lbl]
         labels = ', '.join(labels)
         return labels
-
-    def get_label_for_admin(self):
-        from veche.models import Community
-
-        self_label = str(self)
-        CTModel = ContentType.objects.get(model=self.object_type.model).model_class()
-        entity = CTModel.objects.get(pk=self.object_id)
-        if isinstance(entity, Community):
-            community_label = entity.get_community_label()
-            self_label += f'. {community_label} (id={self.object_id})'
-        else:
-            self_label += f'. {CTModel._meta.verbose_name} (id={self.object_id})'
-        return self_label

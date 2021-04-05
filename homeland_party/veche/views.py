@@ -65,6 +65,7 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         context = self.get_context_data()
         extra_context = {
             'geo': geo,
+            'geo_tens_for_join_qs': Community.get_geo_tens_for_join(),
         }
         context.update(extra_context)
         return render(request, 'veche_join_geo_ten.html', context=context)

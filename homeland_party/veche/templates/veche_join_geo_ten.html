@@ -2,17 +2,56 @@
 {% load static %}
 
 {% block container %}
-        <div id="content">
-            {% block content %}
-                <h1>Вступить в географиескую десятку</h1>
-                {% if geo %}
-                    <p>Вы можете вступить в слудующие географические десятки:</p>
-                {% else %}
-                    <p>Вы не указали своё местоположение. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
-                    укажите своё геограгфическое положение.</p>
-                {% endif %}
-            {% endblock %}
-        </div>
+    <div id="content">
+        {% block content %}
+            <h1>Вступить в географиескую десятку</h1>
+            {% if geo %}
+                <p></p>
+
+
+            <dev class="row">
+                <dev class="col">
+                    <p>Вы можете вступить в одну из следующих географических десяток:</p>
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Адрес</th>
+                          <th scope="col">Кол-во участников</th>
+                          <th scope="col">Место на карте</th>
+                          <th scope="col"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for geo_ten in geo_tens_for_join_qs %}
+                            <tr>
+                              <th scope="row">{{ forloop.counter }}</th>
+                              <td>{{ geo_ten.get_geo }}</td>
+                              <td><p class="text-center">{{ geo_ten.participants_count }}</p></td>
+                              <td>
+                                  <p class="text-center">
+                                      <span class="text-success">
+                                          <i class="fa fa-2x fa-map-marker-alt"></i>
+                                      </span>
+                                  </p>
+                              </td>
+                              <td><button type="button" class="btn btn-primary join-ten">Подать заявку</button></td>
+                            </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                </dev>
+            </dev>
+
+
+
+
+            {% else %}
+                <p>Вы не указали своё местоположение. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
+                укажите своё геограгфическое положение.</p>
+            {% endif %}
+        {% endblock %}
+    </div>
 {% endblock container %}
 
 

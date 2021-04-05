@@ -16,7 +16,7 @@ class GeoAdmin(admin.ModelAdmin):
         CTModel = ContentType.objects.get(model=instance.object_type.model).model_class()
         entity = CTModel.objects.get(pk=instance.object_id)
         if isinstance(entity, Community):
-            community_label = entity.get_community_label()
+            community_label = entity.get_community_type_label()
             self_label += f'. {community_label} id = {instance.object_id}'
         else:
             self_label += f'. {CTModel._meta.verbose_name} id = {instance.object_id}'

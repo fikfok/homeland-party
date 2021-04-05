@@ -149,7 +149,8 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         if latitude and longitude:
             # Если пришли координаты, то удаляем старый адрес если он есть
             if profile.geo_exists():
-                profile.geo.all().delete()
+                geo = profile.get_geo()
+                geo.delete()
             geo_data = geocoder.get_geo_data(latitude=latitude, longitude=longitude)
             geo_data['object_type'] = ContentType.objects.get_for_model(Profile)
             geo_data['object_id'] = profile.pk

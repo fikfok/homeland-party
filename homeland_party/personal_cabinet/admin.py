@@ -25,8 +25,12 @@ class GeoAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('profile',)
+    list_display = ('profile', 'user_in_geo_community',)
 
     def profile(self, instance):
-        instance_label = f'User email: {str(instance)}. ID = {str(instance.pk)}'
+        user_name = instance.user.username
+        instance_label = f'User email: {str(instance)}. User name: {user_name}. ID = {str(instance.pk)}'
         return instance_label
+
+    def user_in_geo_community(self, instance):
+        return instance.user_in_geo_community()

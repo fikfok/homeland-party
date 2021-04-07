@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView
 
+from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models.models import Profile
 from veche.models import Community
@@ -20,11 +21,9 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
         geo = profile.get_geo()
-        user_can_create_community = profile.user_can_create_community()
         context = self.get_context_data()
         extra_context = {
             'geo': geo,
-            'user_can_create_community': user_can_create_community,
             'address_text': str(geo) if geo else '',
         }
         context.update(extra_context)
@@ -33,8 +32,8 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         user = request.user
         profile = Profile.objects.filter(user=user).first()
-        user_can_create_community = profile.user_can_create_community()
-        if user_can_create_community:
+        user_can_create_geo_community = profile.user_can_create_geo_community()
+        if user_can_create_geo_community:
             community_data = {
                 'author': user,
                 'type': Community.COMMUNITY_TYPE_TEN_KEY,
@@ -53,7 +52,7 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
             data = {'redirect_url': redirect_url}
             return JsonResponse(data, status=200)
         else:
-            return HttpResponse(status=400)
+            return HttpResponse('Вы не можете создать географическую десятку', status=400)
 
 
 class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
@@ -66,6 +65,8 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         extra_context = {
             'geo': geo,
             'geo_tens_for_join_qs': Community.get_geo_tens_for_join(),
+            'map_width': MAP_WIDTH_PX,
+            'map_height': MAP_HEIGHT_PX,
         }
         context.update(extra_context)
         return render(request, 'veche_join_geo_ten.html', context=context)

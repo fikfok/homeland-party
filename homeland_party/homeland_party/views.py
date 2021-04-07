@@ -31,11 +31,11 @@ class LoginPage(TemplateView):
                     login(request, user)
                     return redirect('home')
                 else:
-                    return HttpResponse('Аккаунт заблокирован')
+                    return HttpResponse('Аккаунт заблокирован', status=400)
             else:
-                return HttpResponse('Неверный логин')
+                return HttpResponse('Неверный логин', status=400)
         else:
-            return HttpResponse('Неверная дата')
+            return HttpResponse('Неверная дата', status=400)
 
     def _authenticate(self, email: str, password: str):
         default_user = None

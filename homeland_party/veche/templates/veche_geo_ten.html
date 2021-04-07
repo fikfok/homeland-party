@@ -5,7 +5,7 @@
         <div id="content">
             {% block content %}
                 <h1>Создать географическую десятку</h1>
-                {% if user_can_create_community %}
+                {% if user_can_create_geo_community %}
                     {% csrf_token %}
                     <p>Вы можете создать только одну десятку. У неё будут Ваши <a href="{% url 'personal_cabinet:profile' %}">географические координаты и адрес</a>.</p>
                     <p>Широта: {{ geo.geo_lon }}&deg;</p>
@@ -26,7 +26,7 @@
                                     <p id="modalMessage"></p>
                                 </div>
                                 <div class="modal-footer d-flex justify-content-center">
-                                    <button type="button" class="btn btn-primary" id="tenHasBeenCreatedCloseOk">OK</button>
+                                    <button type="button" class="btn btn-primary" id="tenHasBeenCreatedOk">OK</button>
                                 </div>
                             </div>
                         </div>
@@ -51,7 +51,7 @@
 {% block scripts %}
 
     <script type="application/javascript">
-        {% if user_can_create_community %}
+        {% if user_can_create_geo_community %}
             var redirectURL;
 
             $('#tenHasBeenCreatedModal').on('hidden.bs.modal', function () {
@@ -63,7 +63,7 @@
             $('#tenHasBeenCreatedClose').on('click', function(event) {
                 $('#tenHasBeenCreatedModal').modal('hide');
             });
-            $('#tenHasBeenCreatedCloseOk').on('click', function(event) {
+            $('#tenHasBeenCreatedOk').on('click', function(event) {
                 $('#tenHasBeenCreatedModal').modal('hide');
             });
 

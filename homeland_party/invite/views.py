@@ -20,13 +20,13 @@ class ActivateInvite(TemplateView):
         try:
             invite = Invite.objects.get(code=invite_code)
         except Invite.DoesNotExist:
-            return HttpResponse('Неверный код приглашения')
+            return HttpResponse('Неверный код приглашения', status=400)
 
         if invite.is_activated:
-            return HttpResponse('Приглашение уже было активировано')
+            return HttpResponse('Приглашение уже было активировано', status=400)
 
         if invite.expire_at < timezone.now():
-            return HttpResponse('Срок приглашения истёк')
+            return HttpResponse('Срок приглашения истёк', status=400)
         return None
 
     def get(self, request, *args, **kwargs):
@@ -66,6 +66,6 @@ class ActivateInvite(TemplateView):
                 context = {'form': form}
                 return render(request, 'activate_invite.html', context=context)
         else:
-            return HttpResponse('Такой пользователь уже создан')
+            return HttpResponse('Такой пользователь уже создан', status=400)
 
 

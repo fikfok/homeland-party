@@ -50,11 +50,11 @@ class PersonalCabinetInvitesView(CustomTemplateViewMixin, TemplateView):
         send_invites_qs = self._get_send_invites_qs(request=request)
         invites_remainder = user.profile.max_invites - send_invites_qs.count()
         if not user.is_superuser and invites_remainder <= 0:
-            return HttpResponse('Лимит приглашений исчерпан')
+            return HttpResponse('Лимит приглашений исчерпан', status=400)
 
         does_invite_exist_with_email = self._does_invite_exist_with_email(request=request)
         if does_invite_exist_with_email:
-            return HttpResponse("Приглашение с таким email'ом уже создано и активировано")
+            return HttpResponse("Приглашение с таким email'ом уже создано и активировано", status=400)
 
         form = InviteForm(request.POST)
         if form.is_valid():
@@ -64,7 +64,7 @@ class PersonalCabinetInvitesView(CustomTemplateViewMixin, TemplateView):
             email_sender.send_email()
             return HttpResponseRedirect(reverse('personal_cabinet:invites'))
         else:
-            return HttpResponse('Неверные данные')
+            return HttpResponse('Неверные данные', status=400)
 
     def _get_send_invites_qs(self, request):
         return Invite.objects.filter(author=request.user)

@@ -20,12 +20,12 @@ class Profile(GeoMixin, models.Model):
     def __str__(self):
         return f'{self.user.email}'
 
-    def user_can_create_community(self) -> bool:
+    def user_can_create_geo_community(self) -> bool:
         user_not_in_geo_community = not self.user_in_geo_community()
-        user_can_create_community = False
+        user_can_create_geo_community = False
         if self.geo_exists() and user_not_in_geo_community:
-            user_can_create_community = True
-        return user_can_create_community
+            user_can_create_geo_community = True
+        return user_can_create_geo_community
 
     def user_in_geo_community(self) -> bool:
         return self.geo_community.all().exists()

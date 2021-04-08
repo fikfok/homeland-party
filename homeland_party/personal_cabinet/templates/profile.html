@@ -64,11 +64,12 @@
                 </div>
 
                 <div class="row mb-3">
-                    <div>Ваше местоположение:</div>
                     <div class="col-md-6 mb-3">
+                        <p>Спозиционируйте карту согласно вашему географическому положению и сделайте один клик мыши, чтобы установить маркер:</p>
                         <div id="map" class="yandex-map"></div>
                     </div>
                     <div class="col-md-6">
+                        <p>Адрес, который ближе всего к выбранной вами точке:</p>
                         <textarea id="staticAddress" class="form-control m-1" type="text" readonly rows="2">{{ address_text }}</textarea>
                     </div>
                     {{ profile_form.latitude }}
@@ -108,7 +109,7 @@
                 zoom: 7
             });
 
-            {% if geo_exists %}
+            {% if address_text %}
                 currentPlacemark = new ymaps.Placemark();
                 var cords = [{{ profile_form.latitude.value }}, {{ profile_form.longitude.value }}];
                 currentPlacemark.geometry.setCoordinates(cords);

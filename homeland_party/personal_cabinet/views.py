@@ -1,3 +1,5 @@
+import copy
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, HttpResponseRedirect
@@ -84,13 +86,11 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
 
         context = self.get_context_data()
         extra_context = {
-            'user': user,
             'profile_form': profile_form,
             'yandex_api_key': YANDEX_API_KEY,
             'map_width': MAP_WIDTH_PX,
             'map_height': MAP_HEIGHT_PX,
             'address_text': str(geo) if geo else '',
-            'geo_exists': True if geo else False,
         }
         context.update(extra_context)
         return render(request, 'profile.html', context=context)
@@ -118,30 +118,29 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
             self._update_profile(profile_form, user)
             response = HttpResponseRedirect(reverse('personal_cabinet:profile'))
         else:
-            profile = Profile.objects.get(user=user)
-            geo = profile.geo if profile else None
-            context = {
-                'user': user,
+            profile_form = ProfileForm(request.POST)
+            context = self.get_context_data()
+            extra_context = {
                 'profile_form': profile_form,
                 'yandex_api_key': YANDEX_API_KEY,
                 'map_width': MAP_WIDTH_PX,
                 'map_height': MAP_HEIGHT_PX,
-                'latitude': geo.geo_lat if profile and geo else DEFAULT_LAT,
-                'longitude': geo.geo_lon if profile and geo else DEFAULT_LON,
-                'address_text': str(geo) if geo else ''
+                'address_text': '',
             }
+            context.update(extra_context)
             response = render(request, 'profile.html', context=context)
         return response
 
     def _update_profile(self, profile_form, user):
-        profile = Profile.objects.get(user=user)
-        birth_date = profile_form.cleaned_data['birth_date']
-        if birth_date:
-            profile.birth_date = profile_form.cleaned_data['birth_date']
-        else:
-            profile.birth_date = None
-        self._update_geo(profile, profile_form)
-        profile.save()
+        profile = Profile.objects.filter(user=user).first()
+        if profile:
+            birth_date = profile_form.cleaned_data['birth_date']
+            if birth_date:
+                profile.birth_date = profile_form.cleaned_data['birth_date']
+            else:
+                profile.birth_date = None
+            self._update_geo(profile, profile_form)
+            profile.save()
 
     def _update_geo(self, profile, profile_form):
         latitude = profile_form.cleaned_data.get('latitude')
@@ -170,11 +169,12 @@ class GeoCodeView(CustomTemplateViewMixin, View):
         user = request.user
         profile = Profile.objects.get(user=user)
         geocode = request.GET.get('geocode', '')
-        geo_data = geocoder.get_geo_data(geocode=geocode)
+        address = geocoder.get_geo_data(geocode=geocode)
+        geo_data = copy.deepcopy(address)
         geo_data['object_type'] = ContentType.objects.get_for_model(Profile)
         geo_data['object_id'] = profile.pk
         geo_form = GeoForm(geo_data)
-        if geo_data and geo_form.is_valid():
+        if address and geo_form.is_valid():
             result = str(geo_form.instance)
             status = 200
         else:

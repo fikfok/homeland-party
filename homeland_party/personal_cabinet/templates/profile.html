@@ -23,16 +23,22 @@
         {% block content %}
             <h1>Профиль</h1>
             <h3>Укажите, пожалуйста, Ваше данные:</h3>
+            <p><span class="text-danger">* - поля обязательные для ввода</span></p>
             <div class="row mt-3 mb-3">
                 <div>Ваш email: <strong>{{ user.email }}</strong></div>
             </div>
             <form method="post">
                 {% csrf_token %}
                 <div class="row mb-3">
-                    <div>Ник (подпись под сообщениями):</div>
+                    <div>Никнейм (подпись под сообщениями) *:</div>
                     <div class="col-md-3">
                         <div>{{ profile_form.user_name }}</div>
                     </div>
+                    {% if profile_form.user_name.errors %}
+                        <div>
+                            <strong class="text-danger">{{ profile_form.user_name.errors.as_text }}</strong>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="row mb-3">
                     <div>Имя:</div>
@@ -95,6 +101,9 @@
 {% block scripts %}
 
     <script type="application/javascript">
+        $("input[required], select[required]").attr("oninvalid", "this.setCustomValidity('Поле обязательно для ввода')");
+        $("input[required], select[required]").attr("oninput", "setCustomValidity('')")
+
         $('#id_birth_date').datetimepicker({
             locale: 'ru',
             format: 'L'

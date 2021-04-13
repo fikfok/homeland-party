@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.views import View
 from django.views.generic import TemplateView
 
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX
@@ -62,9 +63,10 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         profile = Profile.objects.filter(user=user).first()
         geo = profile.get_geo()
         context = self.get_context_data()
+        geo_tens_for_join_qs = Community.get_geo_tens_for_join()
         extra_context = {
             'geo': geo,
-            'geo_tens_for_join_qs': Community.get_geo_tens_for_join(),
+            'geo_tens_for_join_qs': geo_tens_for_join_qs,
             'map_width': MAP_WIDTH_PX,
             'map_height': MAP_HEIGHT_PX,
         }
@@ -72,8 +74,42 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         return render(request, 'veche_join_geo_ten.html', context=context)
 
 
+class GeoCommunityParticipiants(CustomTemplateViewMixin, View):
+    def get(self, request, *args, **kwargs):
+        geo_community_id = request.GET.get('geo_community_id')
+        if geo_community_id:
+            profiles_qs = Profile.objects.filter(geo_community=geo_community_id)
+            if profiles_qs.exists():
+                result = []
+                for profile in profiles_qs:
+                    card_data = profile.get_card_data()
+                    data = {
+                        'user_name': card_data['user_name'],
+                        'first_name': card_data['first_name'],
+                        'last_name': card_data['last_name'],
+                        'profile_id': profile.pk,
+                    }
+                    result.append(data)
+                status = 200
+            else:
+                result = []
+                status = 400
+        else:
+            result = []
+            status = 200
+        return JsonResponse(result, status=status, safe=False)
+
+
 class MyGeoTenView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         return render(request, 'veche_my_geo_ten.html', context=context)
+
+
+class UserCardView(CustomTemplateViewMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        context = {}
+        response = render(request, 'veche_user_card.html', context=context)
+        return response

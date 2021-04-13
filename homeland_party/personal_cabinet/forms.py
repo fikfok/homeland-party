@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django import forms
+from django.contrib.auth.models import User
 from django.forms import ModelForm, Form
 from django.utils.html import escape
 
@@ -37,8 +38,10 @@ class ProfileForm(Form):
     longitude = forms.FloatField(widget=forms.HiddenInput())
     birth_date = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control datetimepicker'}))
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user_pk, is_post_request, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+        self.user_pk = user_pk
+        self.is_post_request = is_post_request
         self.fields['user_name'].required = False
         self.fields['first_name'].required = False
         self.fields['last_name'].required = False
@@ -47,7 +50,13 @@ class ProfileForm(Form):
         self.fields['birth_date'].required = False
 
     def clean_user_name(self):
-        return escape(self.cleaned_data['user_name'])
+        user_name = escape(self.cleaned_data['user_name'])
+        is_user_name_empty = not bool(user_name)
+        if User.objects.filter(username=user_name).exclude(pk=self.user_pk).exists():
+            raise forms.ValidationError('Такой никнейм уже используется. Укажите, пожалуйлста, другой никнейм.')
+        if self.is_post_request and is_user_name_empty:
+            raise forms.ValidationError('Это поле обязательно для ввода.')
+        return user_name
 
     def clean_first_name(self):
         return escape(self.cleaned_data['first_name'])
@@ -61,7 +70,7 @@ class ProfileForm(Form):
             try:
                 birth_date = datetime.strptime(self.cleaned_data['birth_date'], "%d.%m.%Y").date()
             except Exception:
-                raise forms.ValidationError('Формат даты не корректен')
+                raise forms.ValidationError('Формат даты не корректен.')
         return birth_date
 
     def clean(self):

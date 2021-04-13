@@ -15,6 +15,7 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
             'profile': profile if profile else None,
             'user_in_geo_community': profile.user_in_geo_community() if profile else False,
             'user_can_create_geo_community': profile.user_can_create_geo_community() if profile else False,
+            'user_can_join_in_geo_community': profile.user_can_join_in_geo_community() if profile else False,
         }
         context.update(extra_context)
         return context

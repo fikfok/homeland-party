@@ -7,6 +7,11 @@
             width: {{ map_width }}px;
             height: {{ map_height }}px;
         }
+
+        .increase-size {
+            font-size: 1.2rem;
+        }
+
     </style>
 {% endblock styles %}
 
@@ -18,32 +23,14 @@
     <div id="content">
         {% block content %}
             <h1>Вступить в географическую десятку</h1>
-            {% if geo %}
+            {% if user_can_join_in_geo_community %}
 
                 <dev class="row">
                     <dev class="col">
                         {% if geo_tens_for_join_qs %}
 
-                            <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="geoTenMapModal" aria-labelledby="geoTenMapLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-sm" role="document">
-                                    <div class="modal-content">
-                                        <div id="geoTenMapModalHeader" class="modal-header text-center">
-                                            <h4 class="modal-title font-weight-bold">Географическая десятка на карте</h4>
-                                            <button type="button" id="geoTenMapClose" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div id="modalMessage">
-                                                <div id="map" class="yandex-map"></div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer d-flex justify-content-center">
-                                            <button type="button" class="btn btn-primary" id="geoTenMapOk">OK</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            {% include 'geo_ten_map_modal.html' %}
+                            {% include 'profiles_in_geo_ten_modal.html' %}
 
                             <p>Вы можете вступить в одну из следующих географических десяток:</p>
                             <table class="table">
@@ -61,7 +48,13 @@
                                       <tr>
                                           <th scope="row">{{ forloop.counter }}</th>
                                           <td>{{ geo_ten.get_geo }}</td>
-                                          <td><p class="text-center">{{ geo_ten.participants_count }}</p></td>
+                                          <td>
+                                              <p class="text-center geo-ten-participants" data-geotenid="{{ geo_ten.pk }}">
+                                                <span class="badge badge-info increase-size" role="button">
+                                                    {{ geo_ten.participants_count }}
+                                                </span>
+                                              </p>
+                                          </td>
                                           <td>
                                               <p class="text-center">
                                                   <span class="text-success geoMark" role="button" data-geocode="{{ geo_ten.get_geo.geo_lat }},{{ geo_ten.get_geo.geo_lon }}">
@@ -85,8 +78,14 @@
                 </dev>
 
             {% else %}
-                <p>Вы не указали своё местоположение. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
-                укажите своё географическое положение.</p>
+                {% if not geo %}
+                    <p>Вы не указали своё местоположение. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
+                    укажите своё географическое положение.</p>
+                {% endif %}
+                {% if not user.username %}
+                    <p>Вы не указали свой никнейм. Перейдите, пожалуйста, на <a href="{% url 'personal_cabinet:profile' %}">страницу профиля</a> и
+                    укажите свой никнейм.</p>
+                {% endif %}
             {% endif %}
         {% endblock %}
     </div>
@@ -96,7 +95,7 @@
 {% block scripts %}
     <script>
         {% if geo_tens_for_join_qs %}
-            var myMap, currentPlacemark;
+            var myMap, currentPlacemark, geoTenId, cords;
 
             $('#geoTenMapModal').on('hidden.bs.modal', function () {
                 $('#map').empty()
@@ -109,8 +108,41 @@
                 $('#geoTenMapModal').modal('hide');
             });
 
+            $('#profilesInGeoTenModal').on('hidden.bs.modal', function () {
+                {#$('#geoTenProfilesLIst').empty()#}
+            });
+
+            $('#profilesInGeoTenClose').on('click', function(event) {
+                $('#profilesInGeoTenModal').modal('hide');
+            });
+            $('#profilesInGeoTenOk').on('click', function(event) {
+                $('#profilesInGeoTenModal').modal('hide');
+            });
+
+            $(".geo-ten-participants").click(function(ev) {
+                geoTenId = $(ev.currentTarget).data('geotenid');
+                $('#profilesInGeoTenModal').modal('show');
+                var url = `{% url "veche:geo_community_participiants"%}?geo_community_id=${geoTenId}`
+                $.get(
+                    url,
+                    function(data) {
+                        $('#geoTenProfilesLIst').empty();
+                        $.each(data, function(index, participiant) {
+                            var firstLastName = [participiant.first_name, participiant.last_name].filter(Boolean).join(' ');
+                            var participiantLabel = `${participiant.user_name}` + (Boolean(firstLastName) ? ` (${firstLastName})` : '');
+                            var userCardURL = "{% url 'veche:user_card' 999999999 %}";
+                            userCardURL = userCardURL.replace(999999999, participiant.profile_id);
+                            var newRow = `<tr><th scope="row">${index + 1}</th><td><a href="${userCardURL}">${participiantLabel}</a></td>`;
+                            $('#geoTenProfilesLIst').append(newRow);
+                        });
+                    }
+                ).fail(function(response) {
+                })
+
+            });
+
             $(".geoMark").click(function(ev) {
-                var cords = $(ev.currentTarget).data('geocode').split(',');
+                cords = $(ev.currentTarget).data('geocode').split(',');
 
                 ymaps.ready(init);
                 function init() {

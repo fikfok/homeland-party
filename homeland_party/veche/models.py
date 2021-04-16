@@ -93,6 +93,9 @@ class CommunityRequest(SafeDeleteModel, models.Model):
         stats = RequestStats(total_profiles=total_profiles, total_agreed=total_agreed, total_rejected=total_rejected)
         return stats
 
+    def __str__(self):
+        return f'Заявка от {self.author.username}. {self.community}'
+
 
 class RequestResolution(SafeDeleteModel, models.Model):
     RESOLUTION_AGREED_KEY = 'agreed'

@@ -78,7 +78,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        profile = Profile.objects.filter(user=user).first()
+        profile = self._get_profile()
         geo = profile.get_geo()
         data = profile.get_form_data()
         profile_form = ProfileForm(data=data, user_pk=user.pk, is_post_request=False)
@@ -104,7 +104,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         else:
             profile_form = ProfileForm(data=request.POST, user_pk=user.pk, is_post_request=True)
             context = self.get_context_data()
-            profile = Profile.objects.filter(user=user).first()
+            profile = self._get_profile()
             geo = profile.get_geo()
             extra_context = {
                 'profile_form': profile_form,
@@ -118,7 +118,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         return response
 
     def _update_profile(self, profile_form, user):
-        profile = Profile.objects.filter(user=user).first()
+        profile = self._get_profile()
         if profile:
             birth_date = profile_form.cleaned_data['birth_date']
             if birth_date:

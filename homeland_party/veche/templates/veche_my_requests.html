@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block styles %}
+    <style>
+        .increase-size {
+            font-size: 1.2rem;
+        }
+
+    </style>
 {% endblock styles %}
 
 {% block scripts_head %}
@@ -12,6 +18,45 @@
         {% block content %}
             <h1>Заявки, которые я должен согласовать</h1>
             <h1>Созданные мною заявки</h1>
+            {% if geo_community_request %}
+                <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Адрес географиеской десятки</th>
+                          <th scope="col">Общее кол-во участников</th>
+                          <th scope="col">Одобрило</th>
+                          <th scope="col">Отклонило</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                          <tr>
+                              <th scope="row">{{ geo_community_request.community.get_geo }}</th>
+                              <td>
+                                <p class="text-center">
+                                    <span class="badge badge-info increase-size">
+                                        {{ geo_request_stats.total_profiles }}
+                                    </span>
+                                </p>
+                              </td>
+                              <td>
+                                <p class="text-center">
+                                    <span class="badge badge-success increase-size">
+                                        {{ geo_request_stats.total_agreed }}
+                                    </span>
+                                </p>
+                              </td>
+                              <td>
+                                <p class="text-center">
+                                    <span class="badge badge-danger increase-size">
+                                        {{ geo_request_stats.total_rejected }}
+                                    </span>
+                                </p>
+
+                              </td>
+                          </tr>
+                      </tbody>
+                </table>
+            {% endif %}
         {% endblock %}
     </div>
 {% endblock container %}

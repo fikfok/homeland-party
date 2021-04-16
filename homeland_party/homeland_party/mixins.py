@@ -9,7 +9,7 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
     def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        profile = Profile.objects.filter(user=user).first()
+        profile = self._get_profile()
         extra_context = {
             'user': user,
             'profile': profile if profile else None,
@@ -20,3 +20,6 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
         }
         context.update(extra_context)
         return context
+
+    def _get_profile(self) -> Profile:
+        return Profile.objects.filter(user=self.request.user).first()

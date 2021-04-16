@@ -1,9 +1,14 @@
+from collections import namedtuple
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Count, F
 from safedelete.models import SafeDeleteModel
 
 from personal_cabinet.mixins.geo_mixin import GeoMixin
+
+
+RequestStats = namedtuple('RequestStats', ('total_profiles', 'total_agreed', 'total_rejected'))
 
 
 class Community(GeoMixin, SafeDeleteModel, models.Model):
@@ -45,6 +50,11 @@ class Community(GeoMixin, SafeDeleteModel, models.Model):
         current_participiants_cnt = Profile.objects.filter(geo_community=self.pk).count()
         return self.max_participants > current_participiants_cnt
 
+    def get_profiles_qs(self):
+        from personal_cabinet.models.models import Profile
+
+        return Profile.objects.filter(geo_community=self)
+
     def __str__(self):
         geo = self.get_geo()
         current_label = self.get_community_type_label()
@@ -76,6 +86,13 @@ class CommunityRequest(SafeDeleteModel, models.Model):
     community = models.ForeignKey(to=Community, on_delete=models.CASCADE)
     comment = models.TextField(verbose_name='Комментарий', null=True, blank=True)
 
+    def get_request_stats(self) -> RequestStats:
+        total_profiles = self.community.get_profiles_qs().count()
+        total_agreed = self.resolutions.filter(resolution=RequestResolution.RESOLUTION_AGREED_KEY).count()
+        total_rejected = self.resolutions.filter(resolution=RequestResolution.RESOLUTION_REJECTED_KEY).count()
+        stats = RequestStats(total_profiles=total_profiles, total_agreed=total_agreed, total_rejected=total_rejected)
+        return stats
+
 
 class RequestResolution(SafeDeleteModel, models.Model):
     RESOLUTION_AGREED_KEY = 'agreed'
@@ -95,4 +112,4 @@ class RequestResolution(SafeDeleteModel, models.Model):
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now=True, db_index=True)
     resolution = models.CharField(verbose_name='Решение', choices=RESOLUTION_CHOICES, max_length=20)
-    community_request = models.ForeignKey(to=CommunityRequest, on_delete=models.CASCADE)
+    community_request = models.ForeignKey(to=CommunityRequest, on_delete=models.CASCADE, related_name='resolutions')

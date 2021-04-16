@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models.models import Profile
-from veche.models import Community, CommunityRequest
+from veche.models import Community, CommunityRequest, RequestStats
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -20,7 +20,7 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        profile = Profile.objects.filter(user=user).first()
+        profile = self._get_profile()
         geo = profile.get_geo()
         context = self.get_context_data()
         extra_context = {
@@ -32,7 +32,7 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        profile = Profile.objects.filter(user=user).first()
+        profile = self._get_profile()
         user_can_create_geo_community = profile.user_can_create_geo_community()
         if user_can_create_geo_community:
             community_data = {
@@ -62,8 +62,7 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         if context['user_has_not_geo_community_request']:
-            user = request.user
-            profile = Profile.objects.filter(user=user).first()
+            profile = self._get_profile()
             geo = profile.get_geo()
             geo_tens_for_join_qs = Community.get_geo_tens_for_join()
             extra_context = {
@@ -101,9 +100,13 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
 
 class GeoCommunityParticipiants(CustomTemplateViewMixin, View):
     def get(self, request, *args, **kwargs):
-        geo_community_id = request.GET.get('geo_community_id')
-        if geo_community_id:
-            profiles_qs = Profile.objects.filter(geo_community=geo_community_id)
+        try:
+            geo_community = Community.objects.get(pk=request.GET.get('geo_community_id'))
+        except Exception:
+            result = []
+            status = 400
+        else:
+            profiles_qs = geo_community.get_profiles_qs()
             if profiles_qs.exists():
                 result = []
                 for profile in profiles_qs:
@@ -119,9 +122,7 @@ class GeoCommunityParticipiants(CustomTemplateViewMixin, View):
             else:
                 result = []
                 status = 400
-        else:
-            result = []
-            status = 200
+
         return JsonResponse(result, status=status, safe=False)
 
 
@@ -142,6 +143,16 @@ class UserCardView(CustomTemplateViewMixin, TemplateView):
 
 class MyRequestsView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
+        profile = self._get_profile()
+        geo_community_request = profile.get_geo_community_request()
+        if geo_community_request:
+            geo_request_stats = geo_community_request.get_request_stats()
+        else:
+            geo_request_stats = RequestStats(0, 0, 0)
         context = self.get_context_data()
-        response = render(request, 'veche_my_requests.html', context=context)
-        return response
+        extra_context = {
+            'geo_community_request': geo_community_request,
+            'geo_request_stats': geo_request_stats,
+        }
+        context.update(extra_context)
+        return render(request, 'veche_my_requests.html', context=context)

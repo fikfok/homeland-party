@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models.models import Profile
-from veche.models import Community
+from veche.models import Community, CommunityRequest
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -51,27 +51,52 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
 
             redirect_url = request.build_absolute_uri(reverse('veche:my_geo_ten'))
             data = {'redirect_url': redirect_url}
-            return JsonResponse(data, status=200)
+            response = JsonResponse(data, status=200)
         else:
-            return HttpResponse('Вы не можете создать географическую десятку', status=400)
+            response = HttpResponse('Вы не можете создать географическую десятку', status=400)
+        return response
 
 
 class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        profile = Profile.objects.filter(user=user).first()
-        geo = profile.get_geo()
         context = self.get_context_data()
-        geo_tens_for_join_qs = Community.get_geo_tens_for_join()
-        extra_context = {
-            'geo': geo,
-            'geo_tens_for_join_qs': geo_tens_for_join_qs,
-            'map_width': MAP_WIDTH_PX,
-            'map_height': MAP_HEIGHT_PX,
-        }
-        context.update(extra_context)
-        return render(request, 'veche_join_geo_ten.html', context=context)
+        if context['user_has_not_geo_community_request']:
+            user = request.user
+            profile = Profile.objects.filter(user=user).first()
+            geo = profile.get_geo()
+            geo_tens_for_join_qs = Community.get_geo_tens_for_join()
+            extra_context = {
+                'geo': geo,
+                'geo_tens_for_join_qs': geo_tens_for_join_qs,
+                'map_width': MAP_WIDTH_PX,
+                'map_height': MAP_HEIGHT_PX,
+            }
+            context.update(extra_context)
+            response = render(request, 'veche_join_geo_ten.html', context=context)
+        else:
+            response = HttpResponse('Вы уже подали заявку на вступление в географическую десятку', status=400)
+        return response
+
+    def post(self, request, geo_ten_id):
+        context = self.get_context_data()
+        if context['user_has_not_geo_community_request']:
+            geo_ten = Community.objects.filter(pk=geo_ten_id).first()
+            if geo_ten:
+                is_geo_ten_open = geo_ten.is_geo_ten_open()
+                if is_geo_ten_open:
+                    comment = request.POST.get('comment')
+                    CommunityRequest.objects.create(author=request.user, community=geo_ten, comment=comment)
+                    response = JsonResponse({}, status=200)
+                else:
+                    response = JsonResponse({'message': 'Географическая десятка уже укомплектована'}, status=400)
+            else:
+                response = JsonResponse({'message': 'Заявка подана на несуществующую географическую десятку'},
+                                        status=400)
+        else:
+            response = JsonResponse({'message': 'Вы уже подали заявку на вступление в географическую десятку'},
+                                    status=400)
+        return response
 
 
 class GeoCommunityParticipiants(CustomTemplateViewMixin, View):
@@ -107,9 +132,16 @@ class MyGeoTenView(CustomTemplateViewMixin, TemplateView):
         return render(request, 'veche_my_geo_ten.html', context=context)
 
 
-class UserCardView(CustomTemplateViewMixin, View):
+class UserCardView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
-        context = {}
+        context = self.get_context_data()
         response = render(request, 'veche_user_card.html', context=context)
+        return response
+
+
+class MyRequestsView(CustomTemplateViewMixin, TemplateView):
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data()
+        response = render(request, 'veche_my_requests.html', context=context)
         return response

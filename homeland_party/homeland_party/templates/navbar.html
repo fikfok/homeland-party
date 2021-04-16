@@ -102,9 +102,13 @@
                 {% if user_in_geo_community %}
                     <li><a class="dropdown-item" href="{% url 'veche:my_geo_ten' %}"> Моя географическая десятка </a></li>
                 {% else %}
-                    <li><a class="dropdown-item" href="{% url 'veche:geo_ten' %}"> Создание географической десятки </a></li>
-                    <li><a class="dropdown-item" href="{% url 'veche:join_geo_ten' %}"> Вступить в географическую десятку </a></li>
+                    {% if user_has_not_geo_community_request %}
+                        <li><a class="dropdown-item" href="{% url 'veche:geo_ten' %}"> Создание географической десятки </a></li>
+                        <li><a class="dropdown-item" href="{% url 'veche:join_geo_ten' %}"> Вступить в географическую десятку </a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item" href="{% url 'veche:my_requests' %}"> Заявки </a></li>
                 {% endif %}
+
 		    </ul>
         </li>
 		<li class="nav-item"><a class="nav-link" href="{% url 'crowdfunding:crowdfunding' %}"> Краудфандинг </a></li>

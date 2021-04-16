@@ -31,6 +31,8 @@
 
                             {% include 'geo_ten_map_modal.html' %}
                             {% include 'profiles_in_geo_ten_modal.html' %}
+                            {% include 'send_request_join_geo_ten_modal.html' %}
+                            {% include 'response_join_geo_ten_modal.html' %}
 
                             <p>Вы можете вступить в одну из следующих географических десяток:</p>
                             <table class="table">
@@ -62,7 +64,9 @@
                                                   </span>
                                               </p>
                                           </td>
-                                          <td><button type="button" class="btn btn-primary join-ten">Подать заявку</button></td>
+                                          <td>
+                                              <button type="button" class="btn btn-primary join-ten" data-geotenid="{{ geo_ten.pk }}">Подать заявку</button>
+                                          </td>
                                       </tr>
                                   {% endfor %}
 
@@ -95,7 +99,7 @@
 {% block scripts %}
     <script>
         {% if geo_tens_for_join_qs %}
-            var myMap, currentPlacemark, geoTenId, cords;
+            var myMap, currentPlacemark, joinGeoTenUrl;
 
             $('#geoTenMapModal').on('hidden.bs.modal', function () {
                 $('#map').empty()
@@ -109,14 +113,62 @@
             });
 
             $('#profilesInGeoTenModal').on('hidden.bs.modal', function () {
-                {#$('#geoTenProfilesLIst').empty()#}
+                $('#geoTenProfilesLIst').empty();
             });
 
             $('#profilesInGeoTenClose').on('click', function(event) {
                 $('#profilesInGeoTenModal').modal('hide');
             });
+
             $('#profilesInGeoTenOk').on('click', function(event) {
                 $('#profilesInGeoTenModal').modal('hide');
+            });
+
+            $('#sendRequestJoinGeoTenClose').on('click', function(event) {
+                $('#sendRequestJoinGeoTenModal').modal('hide');
+            });
+
+            $('#responseJoinGeoTenModal').on('hidden.bs.modal', function () {
+                window.location.replace("{% url 'veche:my_requests' %}");
+            });
+
+            $('#responseJoinGeoTenClose').on('click', function(event) {
+                $('#responseJoinGeoTenModal').modal('hide');
+            });
+
+            $('#responseJoinGeoTenOk').on('click', function(event) {
+                $('#responseJoinGeoTenModal').modal('hide');
+            });
+
+            $('#sendRequestJoinGeoTenOk').on('click', function(event) {
+                $('#sendRequestJoinGeoTenModal').modal('hide');
+
+                $.ajaxSetup({
+                    beforeSend: function (xhr, settings) {
+                        var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                        xhr.setRequestHeader('X-CSRFToken', key);
+                    }
+                });
+
+                $.ajax({
+                    type: 'POST',
+                    url: joinGeoTenUrl,
+                    data: {'comment': $('#requestComment').val()},
+                    success: function (response) {
+                        $('#responseJoinGeoTenModalHeader').removeClass('bg-danger');
+                        $('#responseJoinGeoTenModalHeader h4').text('Заявка успешно подана');
+                        $('#responseJoinGeoTenMessage').text('Ваша заявка успешно подана. Дальше вы будете перенаправлены на страницу ваших заявок, где можно отслеживать их статус.')
+                        $('#responseJoinGeoTenModal').modal('show');
+                    },
+                    error: function (response) {
+                        var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании заявки';
+                        $('#responseJoinGeoTenModalHeader').addClass('bg-danger');
+                        $('#responseJoinGeoTenModalHeader h4').text('Ошибка при создании заявки');
+                        $('#responseJoinGeoTenMessage').text(message);
+                        $('#responseJoinGeoTenModal').modal('show');
+                    }
+                })
+
             });
 
             $(".geo-ten-participants").click(function(ev) {
@@ -126,7 +178,6 @@
                 $.get(
                     url,
                     function(data) {
-                        $('#geoTenProfilesLIst').empty();
                         $.each(data, function(index, participiant) {
                             var firstLastName = [participiant.first_name, participiant.last_name].filter(Boolean).join(' ');
                             var participiantLabel = `${participiant.user_name}` + (Boolean(firstLastName) ? ` (${firstLastName})` : '');
@@ -137,12 +188,13 @@
                         });
                     }
                 ).fail(function(response) {
+                    console.log(response)
                 })
 
             });
 
             $(".geoMark").click(function(ev) {
-                cords = $(ev.currentTarget).data('geocode').split(',');
+                var cords = $(ev.currentTarget).data('geocode').split(',');
 
                 ymaps.ready(init);
                 function init() {
@@ -157,6 +209,14 @@
                 }
 
                 $('#geoTenMapModal').modal('show');
+            });
+
+            $(".join-ten").click(function(ev) {
+                var geoTenId = $(ev.currentTarget).data('geotenid');
+                joinGeoTenUrl = `{% url "veche:join_geo_ten" 999999999 %}`;
+                joinGeoTenUrl = joinGeoTenUrl.replace(999999999, geoTenId);
+                $('#sendRequestJoinGeoTenModal').modal('show');
+
             });
         {% endif %}
     </script>

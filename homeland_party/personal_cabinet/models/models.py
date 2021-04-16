@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from homeland_party.const import DEFAULT_LAT, DEFAULT_LON
 from personal_cabinet.mixins.geo_mixin import GeoMixin
-from veche.models import Community
+from veche.models import Community, CommunityRequest
 
 
 class Profile(GeoMixin, models.Model):
@@ -55,3 +55,7 @@ class Profile(GeoMixin, models.Model):
         data = self.get_form_data()
         data['address'] = str(geo) if geo else ''
         return data
+
+    def user_has_not_geo_community_request(self) -> bool:
+        open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
+        return not CommunityRequest.objects.filter(author=self.user, status=open_status).exists()

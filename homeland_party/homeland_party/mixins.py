@@ -17,6 +17,8 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
             'user_can_create_geo_community': profile.user_can_create_geo_community() if profile else False,
             'user_can_join_in_geo_community': profile.user_can_join_in_geo_community() if profile else False,
             'user_has_not_geo_community_request': profile.user_has_not_geo_community_request() if profile else False,
+            'did_user_create_community_request': profile.did_user_create_community_request() if profile else False,
+            'does_user_have_to_approve_requests': profile.does_user_have_to_approve_requests() if profile else False,
         }
         context.update(extra_context)
         return context

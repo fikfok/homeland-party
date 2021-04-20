@@ -24,14 +24,17 @@ class Profile(GeoMixin, models.Model):
     def user_can_join_in_geo_community(self):
         geo_exists = bool(self.get_geo())
         username_exists = bool(self.user.username)
-        return geo_exists and username_exists
+        user_has_not_geo_community_request = self.user_has_not_geo_community_request()
+        return geo_exists and username_exists and user_has_not_geo_community_request
 
     def user_can_create_geo_community(self) -> bool:
         geo_exists = bool(self.get_geo())
         user_not_in_geo_community = not self.user_in_geo_community()
-        user_can_create_geo_community = False
+        user_has_not_geo_community_request = self.user_has_not_geo_community_request()
         username_exists = bool(self.user.username)
-        if geo_exists and user_not_in_geo_community and username_exists:
+
+        user_can_create_geo_community = False
+        if geo_exists and user_not_in_geo_community and username_exists and user_has_not_geo_community_request:
             user_can_create_geo_community = True
         return user_can_create_geo_community
 
@@ -57,9 +60,34 @@ class Profile(GeoMixin, models.Model):
         return data
 
     def user_has_not_geo_community_request(self) -> bool:
+        # TODO Но по сути тут никак не определяется гео это десятка или не не гео.
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
-        return not CommunityRequest.objects.filter(author=self.user, status=open_status).exists()
+        ten_type = Community.COMMUNITY_TYPE_TEN_KEY
+        result = not CommunityRequest.objects. \
+            filter(author=self.user, status=open_status, community__type=ten_type). \
+            exists()
+        return result
 
-    def get_geo_community_request(self) -> CommunityRequest:
+    def get_created_by_me_community_request(self) -> CommunityRequest:
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
         return CommunityRequest.objects.filter(author=self.user, status=open_status).first()
+
+    def did_user_create_community_request(self) -> bool:
+        return bool(self.get_created_by_me_community_request())
+
+    def get_requests_user_need_to_approve(self) -> list:
+        open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
+        ten_type = Community.COMMUNITY_TYPE_TEN_KEY
+        geo_communities_qs = self.geo_community.all().filter(type=ten_type)
+        result = []
+        for geo_community in geo_communities_qs:
+            requests = geo_community. \
+                community_requests. \
+                all(). \
+                filter(status=open_status). \
+                all()
+            result += list(requests)
+        return result
+
+    def does_user_have_to_approve_requests(self) -> bool:
+        return bool(self.get_requests_user_need_to_approve())

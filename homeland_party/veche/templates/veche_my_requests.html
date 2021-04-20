@@ -3,26 +3,75 @@
 
 {% block styles %}
     <style>
+        .yandex-map {
+            width: {{ map_width }}px;
+            height: {{ map_height }}px;
+        }
+
         .increase-size {
             font-size: 1.2rem;
         }
-
     </style>
 {% endblock styles %}
 
 {% block scripts_head %}
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_api_key }}&lang=ru_RU" type="text/javascript"></script>
 {% endblock scripts_head %}
 
 {% block container %}
     <div id="content">
         {% block content %}
-            <h1>Заявки, которые я должен согласовать</h1>
-            <h1>Созданные мною заявки</h1>
-            {% if geo_community_request %}
+
+            {% if requests_user_need_to_approve %}
+                {% include 'geo_ten_map_modal.html' %}
+                {% include 'user_comment_in_request_join_geo_ten_modal.html' %}
+
+                <h1>Заявки, которые необходимо согласовать:</h1>
+                    <table class="table">
+                      <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Автор заявки</th>
+                            <th scope="col"><p class="text-center">Комментарий к заявке</p></th>
+                            <th scope="col"><p class="text-center">Десятка</p></th>
+                            <th scope="col"><p class="text-center">Действие</p></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                {% for request in requests_user_need_to_approve %}
+                       <tr>
+                          <th scope="row">{{ forloop.counter }}</th>
+                          <td><a href="{% url 'veche:user_card' request.author_id %}">{{ request.author.username }}</a></td>
+                          <td class="text-center">
+                              <span class="text-info requestComment" role="button" data-comment="{{ request.comment }}">
+                                   <i class="fa fa-2x fa-comment-dots"></i>
+                              </span>
+                          </td>
+                          <td>
+                              <p class="text-center">
+                                  <span class="text-success geoMark" role="button" data-geocode="{{ request.geo_comminuty.geo_lat }},{{ request.geo_comminuty.geo_lon }}">
+                                      <i class="fa fa-2x fa-map-marker-alt"></i>
+                                  </span>
+                              </p>
+                          </td>
+                          <td>
+                              <div class="d-flex justify-content-center align-items-center">
+                                  <button type="button" class="btn btn-success join-agre mr-3" data-requestid="{{ request.pk }}">Принять</button>
+                                  <button type="button" class="btn btn-danger join-rejected" data-requestid="{{ request.pk }}">Отклонить</button>
+                              </div>
+                          </td>
+                       </tr>
+                {% endfor %}
+                      </tbody>
+                    </table>
+            {% endif %}
+
+            {% if created_by_me_community_request %}
+                <h1>Созданные мною заявки:</h1>
                 <table class="table">
                       <thead>
                         <tr>
-                          <th scope="col">Адрес географиеской десятки</th>
+                          <th scope="col">Адрес географической десятки</th>
                           <th scope="col">Общее кол-во участников</th>
                           <th scope="col">Одобрило</th>
                           <th scope="col">Отклонило</th>
@@ -30,28 +79,27 @@
                       </thead>
                       <tbody>
                           <tr>
-                              <th scope="row">{{ geo_community_request.community.get_geo }}</th>
+                              <th scope="row">{{ created_by_me_community_request.community.get_geo }}</th>
                               <td>
-                                <p class="text-center">
+                                <p>
                                     <span class="badge badge-info increase-size">
-                                        {{ geo_request_stats.total_profiles }}
+                                        {{ created_by_me_community_request_stats.total_profiles }}
                                     </span>
                                 </p>
                               </td>
                               <td>
-                                <p class="text-center">
+                                <p>
                                     <span class="badge badge-success increase-size">
-                                        {{ geo_request_stats.total_agreed }}
+                                        {{ created_by_me_community_request_stats.total_agreed }}
                                     </span>
                                 </p>
                               </td>
                               <td>
-                                <p class="text-center">
+                                <p>
                                     <span class="badge badge-danger increase-size">
-                                        {{ geo_request_stats.total_rejected }}
+                                        {{ created_by_me_community_request_stats.total_rejected }}
                                     </span>
                                 </p>
-
                               </td>
                           </tr>
                       </tbody>
@@ -63,4 +111,59 @@
 
 
 {% block scripts %}
+<script>
+    {% if requests_user_need_to_approve %}
+        var myMap, currentPlacemark;
+
+        $('#geoTenMapModal').on('hidden.bs.modal', function () {
+            $('#map').empty()
+        });
+
+        $('#geoTenMapClose').on('click', function(event) {
+            $('#geoTenMapModal').modal('hide');
+        });
+
+        $('#geoTenMapOk').on('click', function(event) {
+            $('#geoTenMapModal').modal('hide');
+        });
+
+        $(".geoMark").click(function(ev) {
+            var cords = $(ev.currentTarget).data('geocode').split(',');
+
+            ymaps.ready(init);
+            function init() {
+                myMap = new ymaps.Map('map', {
+                    center: cords,
+                    zoom: 7
+                });
+                myMap.geoObjects.removeAll();
+                currentPlacemark = new ymaps.Placemark();
+                currentPlacemark.geometry.setCoordinates(cords);
+                myMap.geoObjects.add(currentPlacemark);
+            }
+
+            $('#geoTenMapModal').modal('show');
+        });
+
+        $('#userRequestCommentModal').on('hidden.bs.modal', function () {
+            $('#requestComment').text();
+        });
+
+        $('#userRequestCommentClose').on('click', function(event) {
+            $('#userRequestCommentModal').modal('hide');
+        });
+
+        $('#userRequestCommentOk').on('click', function(event) {
+            $('#userRequestCommentModal').modal('hide');
+        });
+
+        $(".requestComment").click(function(ev) {
+            var comment = $(ev.currentTarget).data('comment');
+            $('#requestComment').text(comment);
+            $('#userRequestCommentModal').modal('show');
+        });
+
+    {% endif %}
+</script>
+
 {% endblock scripts %}

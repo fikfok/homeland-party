@@ -83,7 +83,7 @@ class CommunityRequest(SafeDeleteModel, models.Model):
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now=True, db_index=True)
     status = models.CharField(verbose_name='Статус заявки', choices=STATUS_CHOICES, max_length=20,
                               default=REQUEST_STATUS_OPEN_KEY)
-    community = models.ForeignKey(to=Community, on_delete=models.CASCADE)
+    community = models.ForeignKey(to=Community, on_delete=models.CASCADE, related_name='community_requests')
     comment = models.TextField(verbose_name='Комментарий', null=True, blank=True)
 
     def get_request_stats(self) -> RequestStats:
@@ -92,6 +92,10 @@ class CommunityRequest(SafeDeleteModel, models.Model):
         total_rejected = self.resolutions.filter(resolution=RequestResolution.RESOLUTION_REJECTED_KEY).count()
         stats = RequestStats(total_profiles=total_profiles, total_agreed=total_agreed, total_rejected=total_rejected)
         return stats
+
+    @property
+    def geo_comminuty(self):
+        return self.community.get_geo()
 
     def __str__(self):
         return f'Заявка от {self.author.username}. {self.community}'

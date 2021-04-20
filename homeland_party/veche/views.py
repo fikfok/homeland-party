@@ -1,14 +1,13 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils.html import escape
 from django.views import View
 from django.views.generic import TemplateView
 
-from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX
+from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX, YANDEX_API_KEY
 from homeland_party.mixins import CustomTemplateViewMixin
-from personal_cabinet.models.models import Profile
 from veche.models import Community, CommunityRequest, RequestStats
 
 
@@ -84,7 +83,7 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
             if geo_ten:
                 is_geo_ten_open = geo_ten.is_geo_ten_open()
                 if is_geo_ten_open:
-                    comment = request.POST.get('comment')
+                    comment = escape(request.POST.get('comment'))[:1000]
                     CommunityRequest.objects.create(author=request.user, community=geo_ten, comment=comment)
                     response = JsonResponse({}, status=200)
                 else:
@@ -144,15 +143,20 @@ class UserCardView(CustomTemplateViewMixin, TemplateView):
 class MyRequestsView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         profile = self._get_profile()
-        geo_community_request = profile.get_geo_community_request()
-        if geo_community_request:
-            geo_request_stats = geo_community_request.get_request_stats()
+        requests_user_need_to_approve = profile.get_requests_user_need_to_approve()
+        created_by_me_community_request = profile.get_created_by_me_community_request()
+        if created_by_me_community_request:
+            created_by_me_community_request_stats = created_by_me_community_request.get_request_stats()
         else:
-            geo_request_stats = RequestStats(0, 0, 0)
+            created_by_me_community_request_stats = RequestStats(0, 0, 0)
         context = self.get_context_data()
         extra_context = {
-            'geo_community_request': geo_community_request,
-            'geo_request_stats': geo_request_stats,
+            'requests_user_need_to_approve': requests_user_need_to_approve,
+            'created_by_me_community_request': created_by_me_community_request,
+            'created_by_me_community_request_stats': created_by_me_community_request_stats,
+            'yandex_api_key': YANDEX_API_KEY,
+            'map_width': MAP_WIDTH_PX,
+            'map_height': MAP_HEIGHT_PX,
         }
         context.update(extra_context)
         return render(request, 'veche_my_requests.html', context=context)

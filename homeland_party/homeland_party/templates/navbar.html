@@ -107,7 +107,10 @@
                         <li><a class="dropdown-item" href="{% url 'veche:join_geo_ten' %}"> Вступить в географическую десятку </a></li>
                     {% endif %}
                 {% endif %}
-                <li><a class="dropdown-item" href="{% url 'veche:my_requests' %}"> Заявки </a></li>
+
+                {% if did_user_create_community_request or does_user_have_to_approve_requests %}
+                    <li><a class="dropdown-item" href="{% url 'veche:my_requests' %}"> Заявки </a></li>
+                {% endif %}
 		    </ul>
         </li>
 		<li class="nav-item"><a class="nav-link" href="{% url 'crowdfunding:crowdfunding' %}"> Краудфандинг </a></li>

@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX, YANDEX_API_KEY
 from homeland_party.mixins import CustomTemplateViewMixin
-from veche.models import Community, CommunityRequest, RequestStats
+from veche.models import Community, CommunityRequest, RequestStats, RequestResolution
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -20,6 +20,9 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         user = request.user
         profile = self._get_profile()
+        if not profile:
+            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+
         geo = profile.get_geo()
         context = self.get_context_data()
         extra_context = {
@@ -32,6 +35,9 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         user = request.user
         profile = self._get_profile()
+        if not profile:
+            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+
         user_can_create_geo_community = profile.user_can_create_geo_community()
         if user_can_create_geo_community:
             community_data = {
@@ -62,6 +68,9 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         context = self.get_context_data()
         if context['user_has_not_geo_community_request']:
             profile = self._get_profile()
+            if not profile:
+                return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+
             geo = profile.get_geo()
             geo_tens_for_join_qs = Community.get_geo_tens_for_join()
             extra_context = {
@@ -141,8 +150,14 @@ class UserCardView(CustomTemplateViewMixin, TemplateView):
 
 
 class MyRequestsView(CustomTemplateViewMixin, TemplateView):
+    AGREE_URL_ALIAS = 'agree_request'
+    REJECT_URL_ALIAS = 'reject_request'
+
     def get(self, request, *args, **kwargs):
         profile = self._get_profile()
+        if not profile:
+            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+
         requests_user_need_to_approve = profile.get_requests_user_need_to_approve()
         created_by_me_community_request = profile.get_created_by_me_community_request()
         if created_by_me_community_request:
@@ -160,3 +175,64 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
         }
         context.update(extra_context)
         return render(request, 'veche_my_requests.html', context=context)
+
+    def post(self, request):
+        user = request.user
+        profile = self._get_profile()
+        if not profile:
+            return JsonResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+
+        request_id = request.POST.get('request_id')
+        try:
+            request_id = int(request_id)
+        except Exception:
+            response = JsonResponse({'message': 'Неверный идентификатор заявки'}, status=400)
+        else:
+            if request_id:
+                try:
+                    community_request = CommunityRequest.objects.get(pk=request_id)
+                except Exception:
+                    response = JsonResponse({'message': 'Нельзя согласовать заявку, т.к. переданы неверные данные'},
+                                            status=400)
+                else:
+                    is_it_my_request_id = profile.is_it_my_request(some_request=community_request)
+                    if is_it_my_request_id:
+                        did_user_resolve_request = profile.did_user_resolve_request(community_request=community_request)
+
+                        if did_user_resolve_request:
+                            response = JsonResponse({'message': 'Данная заявка вами уже согласована'}, status=400)
+                        else:
+                            current_url_alias = request.resolver_match.url_name
+                            if current_url_alias == self.AGREE_URL_ALIAS:
+                                self._agree_request(community_request=community_request, user=user)
+                            if current_url_alias == self.REJECT_URL_ALIAS:
+                                self._reject_request(community_request=community_request, user=user)
+                            response = JsonResponse({'message': 'Заявка успешно обработана'}, status=200)
+
+                            if current_url_alias not in [self.AGREE_URL_ALIAS, self.REJECT_URL_ALIAS]:
+                                response = JsonResponse({'message': 'Неверный запрос'}, status=400)
+                    else:
+                        response = JsonResponse({'message': 'Нельзя согласовать чужую заявку'}, status=400)
+            else:
+                response = JsonResponse({'message': 'Нельзя согласовать заявку, т.к. переданы неверные данные'},
+                                        status=400)
+        return response
+
+    def _agree_request(self, community_request, user):
+        RequestResolution.objects.create(author=user, resolution=RequestResolution.RESOLUTION_AGREED_KEY,
+                                         community_request=community_request)
+        did_all_participiants_resolve = community_request.did_all_participants_resolve()
+        does_request_have_reject = community_request.does_request_have_reject()
+        if does_request_have_reject:
+            community_request.status = CommunityRequest.REQUEST_STATUS_REJECTED_KEY
+            community_request.save()
+        else:
+            if did_all_participiants_resolve:
+                community_request.status = CommunityRequest.REQUEST_STATUS_AGREED_KEY
+                community_request.save()
+
+    def _reject_request(self, community_request, user):
+        RequestResolution.objects.create(author=user, resolution=RequestResolution.RESOLUTION_REJECTED_KEY,
+                                         community_request=community_request)
+        community_request.status = CommunityRequest.REQUEST_STATUS_REJECTED_KEY
+        community_request.save()

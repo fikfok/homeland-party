@@ -12,4 +12,7 @@ urlpatterns = [
     re_path(r'^join_geo_ten/(?P<geo_ten_id>[0-9]+)$', JoinGeoTenView.as_view(), name='join_geo_ten'),
     re_path(r'^user_card/(?P<profile_id>[0-9]+)$', UserCardView.as_view(), name='user_card'),
     re_path(r'^my_requests$', MyRequestsView.as_view(), name='my_requests'),
+
+    re_path(r'^my_requests/agree$', MyRequestsView.as_view(), name='agree_request'),
+    re_path(r'^my_requests/reject$', MyRequestsView.as_view(), name='reject_request'),
 ]

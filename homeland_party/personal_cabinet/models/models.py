@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from homeland_party.const import DEFAULT_LAT, DEFAULT_LON
 from personal_cabinet.mixins.geo_mixin import GeoMixin
-from veche.models import Community, CommunityRequest
+from veche.models import Community, CommunityRequest, RequestResolution
 
 
 class Profile(GeoMixin, models.Model):
@@ -91,3 +91,18 @@ class Profile(GeoMixin, models.Model):
 
     def does_user_have_to_approve_requests(self) -> bool:
         return bool(self.get_requests_user_need_to_approve())
+
+    def is_it_my_request(self, some_request) -> bool:
+        requests = self.get_requests_user_need_to_approve()
+        result = False
+        for request in requests:
+            if some_request.pk == request.pk:
+                result = True
+                break
+        return result
+
+    def did_user_resolve_request(self, community_request) -> bool:
+        resolution_exists = RequestResolution.objects. \
+            filter(community_request=community_request, author=self.user). \
+            exists()
+        return resolution_exists

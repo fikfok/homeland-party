@@ -56,8 +56,8 @@
                           </td>
                           <td>
                               <div class="d-flex justify-content-center align-items-center">
-                                  <button type="button" class="btn btn-success join-agre mr-3" data-requestid="{{ request.pk }}">Принять</button>
-                                  <button type="button" class="btn btn-danger join-rejected" data-requestid="{{ request.pk }}">Отклонить</button>
+                                  <button type="button" class="btn btn-success join-agree mr-3" data-requestid="{{ request.pk }}">Принять</button>
+                                  <button type="button" class="btn btn-danger join-reject" data-requestid="{{ request.pk }}">Отклонить</button>
                               </div>
                           </td>
                        </tr>
@@ -104,6 +104,10 @@
                           </tr>
                       </tbody>
                 </table>
+            {% endif %}
+
+            {% if not requests_user_need_to_approve and not created_by_me_community_request %}
+                <p>Заявок нет</p>
             {% endif %}
         {% endblock %}
     </div>
@@ -163,6 +167,47 @@
             $('#userRequestCommentModal').modal('show');
         });
 
+        function sendRequest(url, requestId) {
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                    xhr.setRequestHeader('X-CSRFToken', key);
+                }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: {'request_id': requestId},
+                success: function (response) {
+                    console.log(response);
+                    {#$('#responseJoinGeoTenModalHeader').removeClass('bg-danger');#}
+                    {#$('#responseJoinGeoTenModalHeader h4').text('Заявка успешно подана');#}
+                    {#$('#responseJoinGeoTenMessage').text('Ваша заявка успешно подана. Дальше вы будете перенаправлены на страницу ваших заявок, где можно отслеживать их статус.')#}
+                    {#$('#responseJoinGeoTenModal').modal('show');#}
+                },
+                error: function (response) {
+                    console.log(response);
+                    {#var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании заявки';#}
+                    {#$('#responseJoinGeoTenModalHeader').addClass('bg-danger');#}
+                    {#$('#responseJoinGeoTenModalHeader h4').text('Ошибка при создании заявки');#}
+                    {#$('#responseJoinGeoTenMessage').text(message);#}
+                    {#$('#responseJoinGeoTenModal').modal('show');#}
+                }
+            })
+        }
+
+        $(".join-agree").click(function(ev) {
+            var requestId = $(ev.currentTarget).data('requestid');
+            var url = "{% url 'veche:agree_request' %}";
+            sendRequest(url, requestId);
+        });
+
+        $(".join-reject").click(function(ev) {
+            var requestId = $(ev.currentTarget).data('requestid');
+            var url = "{% url 'veche:reject_request' %}";
+            sendRequest(url, requestId);
+        });
     {% endif %}
 </script>
 

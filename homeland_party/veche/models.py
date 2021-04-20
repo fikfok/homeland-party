@@ -97,6 +97,14 @@ class CommunityRequest(SafeDeleteModel, models.Model):
     def geo_comminuty(self):
         return self.community.get_geo()
 
+    def did_all_participants_resolve(self) -> bool:
+        stats = self.get_request_stats()
+        return stats.total_profiles == stats.total_agreed + stats.total_rejected
+
+    def does_request_have_reject(self) -> bool:
+        stats = self.get_request_stats()
+        return stats.total_rejected > 0
+
     def __str__(self):
         return f'Заявка от {self.author.username}. {self.community}'
 

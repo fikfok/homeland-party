@@ -106,9 +106,59 @@
                 </table>
             {% endif %}
 
-            {% if not requests_user_need_to_approve and not created_by_me_community_request %}
-                <p>Заявок нет</p>
-            {% endif %}
+{#            {% if not requests_user_need_to_approve and not created_by_me_community_request %}#}
+{#                <p>Заявок нет</p>#}
+{#            {% endif %}#}
+            <h1>Мои закрытые заявки:</h1>
+                <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Адрес географической десятки</th>
+                          <th scope="col">Общее кол-во участников</th>
+                          <th scope="col">Одобрило</th>
+                          <th scope="col">Отклонило</th>
+                          <th scope="col">Статус заявки</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for request in created_by_me_community_request_solved %}
+                          <tr>
+                              <th scope="row">{{ forloop.counter }}</th>
+                              <th scope="row">{{ request.community.get_geo }}</th>
+                              <td>
+                                <p>
+                                    <span class="badge badge-info increase-size">
+                                        {{ request.get_request_stats.total_profiles }}
+                                    </span>
+                                </p>
+                              </td>
+                              <td>
+                                <p>
+                                    <span class="badge badge-success increase-size">
+                                        {{ request.get_request_stats.total_agreed }}
+                                    </span>
+                                </p>
+                              </td>
+                              <td>
+                                <p>
+                                    <span class="badge badge-danger increase-size">
+                                        {{ request.get_request_stats.total_rejected }}
+                                    </span>
+                                </p>
+                              </td>
+                              <td>
+                                  {% if request.is_ok %}
+                                      <span class="badge badge-success increase-size"><i class="fas fa-check"></i></span>
+                                  {% else %}
+                                      <span class="badge badge-danger increase-size"><i class="fas fa-times"></i></span>
+                                  {% endif %}
+                              </td>
+                          </tr>
+                      {% endfor %}
+                      </tbody>
+                </table>
+
         {% endblock %}
     </div>
 {% endblock container %}

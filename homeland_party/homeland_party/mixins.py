@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+from homeland_party.const import YANDEX_API_KEY, MAP_WIDTH_PX, MAP_HEIGHT_PX
 from personal_cabinet.models.models import Profile
 
 
@@ -19,6 +20,9 @@ class CustomTemplateViewMixin(LoginRequiredMixin):
             'user_has_not_geo_community_request': profile.user_has_not_geo_community_request() if profile else False,
             'did_user_create_community_request': profile.did_user_create_community_request() if profile else False,
             'does_user_have_to_approve_requests': profile.does_user_have_to_approve_requests() if profile else False,
+            'yandex_api_key': YANDEX_API_KEY,
+            'map_width': MAP_WIDTH_PX,
+            'map_height': MAP_HEIGHT_PX,
         }
         context.update(extra_context)
         return context

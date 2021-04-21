@@ -89,9 +89,6 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         context = self.get_context_data()
         extra_context = {
             'profile_form': profile_form,
-            'yandex_api_key': YANDEX_API_KEY,
-            'map_width': MAP_WIDTH_PX,
-            'map_height': MAP_HEIGHT_PX,
             'address_text': str(geo) if geo else '',
         }
         context.update(extra_context)
@@ -114,9 +111,6 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
             geo = profile.get_geo()
             extra_context = {
                 'profile_form': profile_form,
-                'yandex_api_key': YANDEX_API_KEY,
-                'map_width': MAP_WIDTH_PX,
-                'map_height': MAP_HEIGHT_PX,
                 'address_text': str(geo) if geo else '',
             }
             context.update(extra_context)

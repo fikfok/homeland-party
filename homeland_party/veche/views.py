@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -8,6 +9,7 @@ from django.views.generic import TemplateView
 
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX, YANDEX_API_KEY
 from homeland_party.mixins import CustomTemplateViewMixin
+from personal_cabinet.models.models import Profile
 from veche.models import Community, CommunityRequest, RequestStats, RequestResolution
 
 
@@ -160,6 +162,7 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
 
         requests_user_need_to_approve = profile.get_requests_user_need_to_approve()
         created_by_me_community_request = profile.get_created_by_me_community_request()
+        created_by_me_community_request_solved = profile.get_created_by_me_community_request_solved()
         if created_by_me_community_request:
             created_by_me_community_request_stats = created_by_me_community_request.get_request_stats()
         else:
@@ -169,9 +172,7 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
             'requests_user_need_to_approve': requests_user_need_to_approve,
             'created_by_me_community_request': created_by_me_community_request,
             'created_by_me_community_request_stats': created_by_me_community_request_stats,
-            'yandex_api_key': YANDEX_API_KEY,
-            'map_width': MAP_WIDTH_PX,
-            'map_height': MAP_HEIGHT_PX,
+            'created_by_me_community_request_solved': created_by_me_community_request_solved,
         }
         context.update(extra_context)
         return render(request, 'veche_my_requests.html', context=context)
@@ -228,8 +229,12 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
             community_request.save()
         else:
             if did_all_participiants_resolve:
-                community_request.status = CommunityRequest.REQUEST_STATUS_AGREED_KEY
-                community_request.save()
+                with transaction.atomic():
+                    community_request.status = CommunityRequest.REQUEST_STATUS_AGREED_KEY
+                    community_request.save()
+                    profile = Profile.objects.get(user=community_request.author)
+                    profile.geo_community.add(community_request.community)
+                    profile.save()
 
     def _reject_request(self, community_request, user):
         RequestResolution.objects.create(author=user, resolution=RequestResolution.RESOLUTION_REJECTED_KEY,

@@ -72,6 +72,10 @@ class Profile(GeoMixin, models.Model):
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
         return CommunityRequest.objects.filter(author=self.user, status=open_status).first()
 
+    def get_created_by_me_community_request_solved(self) -> CommunityRequest:
+        open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
+        return CommunityRequest.objects.filter(author=self.user).exclude(status=open_status)
+
     def did_user_create_community_request(self) -> bool:
         return bool(self.get_created_by_me_community_request())
 

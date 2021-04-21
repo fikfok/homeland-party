@@ -94,6 +94,10 @@ class CommunityRequest(SafeDeleteModel, models.Model):
         return stats
 
     @property
+    def is_ok(self):
+        return self.status == self.REQUEST_STATUS_AGREED_KEY
+
+    @property
     def geo_comminuty(self):
         return self.community.get_geo()
 

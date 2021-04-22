@@ -28,7 +28,7 @@ class Community(GeoMixin, SafeDeleteModel, models.Model):
         verbose_name_plural = 'Сообщества'
 
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now=True, db_index=True)
+    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     type = models.CharField(verbose_name='Тип сообщества', choices=COMMUNITY_TYPE_CHOICES, max_length=50)
     max_participants = models.PositiveIntegerField(verbose_name='Максимальное количество дочерних элементов')
 
@@ -80,11 +80,12 @@ class CommunityRequest(SafeDeleteModel, models.Model):
         verbose_name_plural = 'Заявки на вступление в сообщество'
 
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now=True, db_index=True)
+    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     status = models.CharField(verbose_name='Статус заявки', choices=STATUS_CHOICES, max_length=20,
                               default=REQUEST_STATUS_OPEN_KEY)
     community = models.ForeignKey(to=Community, on_delete=models.CASCADE, related_name='community_requests')
     comment = models.TextField(verbose_name='Комментарий', null=True, blank=True)
+    updated_at = models.DateTimeField(verbose_name='Дата обновления', auto_now=True, db_index=True)
 
     def get_request_stats(self) -> RequestStats:
         total_profiles = self.community.get_profiles_qs().count()
@@ -129,6 +130,9 @@ class RequestResolution(SafeDeleteModel, models.Model):
         verbose_name_plural = 'Решения по заявке на вступление в сообщество'
 
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now=True, db_index=True)
+    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     resolution = models.CharField(verbose_name='Решение', choices=RESOLUTION_CHOICES, max_length=20)
     community_request = models.ForeignKey(to=CommunityRequest, on_delete=models.CASCADE, related_name='resolutions')
+
+    def is_ok(self):
+        return self.resolution == self.RESOLUTION_AGREED_KEY

@@ -183,7 +183,7 @@
                             var firstLastName = [participiant.first_name, participiant.last_name].filter(Boolean).join(' ');
                             var participiantLabel = `${participiant.user_name}` + (Boolean(firstLastName) ? ` (${firstLastName})` : '');
                             var userCardURL = "{% url 'veche:user_card' 999999999 %}";
-                            userCardURL = userCardURL.replace(999999999, participiant.profile_id);
+                            userCardURL = userCardURL.replace(999999999, participiant.user_id);
                             var newRow = `<tr><th scope="row">${index + 1}</th><td><a href="${userCardURL}">${participiantLabel}</a></td>`;
                             $('#geoTenProfilesLIst').append(newRow);
                         });

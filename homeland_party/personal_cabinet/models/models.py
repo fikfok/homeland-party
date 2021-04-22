@@ -60,7 +60,6 @@ class Profile(GeoMixin, models.Model):
         return data
 
     def user_has_not_geo_community_request(self) -> bool:
-        # TODO Но по сути тут никак не определяется гео это десятка или не не гео.
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
         ten_type = Community.COMMUNITY_TYPE_TEN_KEY
         result = not CommunityRequest.objects. \
@@ -68,16 +67,19 @@ class Profile(GeoMixin, models.Model):
             exists()
         return result
 
-    def get_created_by_me_community_request(self) -> CommunityRequest:
+    def get_created_by_user_community_request(self) -> CommunityRequest:
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
         return CommunityRequest.objects.filter(author=self.user, status=open_status).first()
 
-    def get_created_by_me_community_request_solved(self) -> CommunityRequest:
+    def get_created_by_user_community_request_solved(self) -> CommunityRequest:
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
-        return CommunityRequest.objects.filter(author=self.user).exclude(status=open_status)
+        return CommunityRequest.objects.filter(author=self.user).exclude(status=open_status).order_by('-created_at')
+
+    def get_user_resolutions(self):
+        return RequestResolution.objects.filter(author=self.user).order_by('-created_at')
 
     def did_user_create_community_request(self) -> bool:
-        return bool(self.get_created_by_me_community_request())
+        return bool(self.get_created_by_user_community_request())
 
     def get_requests_user_need_to_approve(self) -> list:
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
@@ -91,6 +93,7 @@ class Profile(GeoMixin, models.Model):
                 filter(status=open_status). \
                 all()
             result += list(requests)
+        result = [request for request in result if not self.did_user_resolve_request(request)]
         return result
 
     def does_user_have_to_approve_requests(self) -> bool:

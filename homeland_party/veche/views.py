@@ -126,6 +126,7 @@ class GeoCommunityParticipiants(CustomTemplateViewMixin, View):
                         'first_name': card_data['first_name'],
                         'last_name': card_data['last_name'],
                         'profile_id': profile.pk,
+                        'user_id': profile.user.pk,
                     }
                     result.append(data)
                 status = 200
@@ -161,18 +162,20 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
             return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
 
         requests_user_need_to_approve = profile.get_requests_user_need_to_approve()
-        created_by_me_community_request = profile.get_created_by_me_community_request()
-        created_by_me_community_request_solved = profile.get_created_by_me_community_request_solved()
-        if created_by_me_community_request:
-            created_by_me_community_request_stats = created_by_me_community_request.get_request_stats()
+        created_by_user_community_request = profile.get_created_by_user_community_request()
+        created_by_user_community_request_solved = profile.get_created_by_user_community_request_solved()
+        user_resolutions = profile.get_user_resolutions()
+        if created_by_user_community_request:
+            created_by_user_community_request_stats = created_by_user_community_request.get_request_stats()
         else:
-            created_by_me_community_request_stats = RequestStats(0, 0, 0)
+            created_by_user_community_request_stats = RequestStats(0, 0, 0)
         context = self.get_context_data()
         extra_context = {
             'requests_user_need_to_approve': requests_user_need_to_approve,
-            'created_by_me_community_request': created_by_me_community_request,
-            'created_by_me_community_request_stats': created_by_me_community_request_stats,
-            'created_by_me_community_request_solved': created_by_me_community_request_solved,
+            'created_by_user_community_request': created_by_user_community_request,
+            'created_by_user_community_request_stats': created_by_user_community_request_stats,
+            'created_by_user_community_request_solved': created_by_user_community_request_solved,
+            'user_resolutions': user_resolutions,
         }
         context.update(extra_context)
         return render(request, 'veche_my_requests.html', context=context)

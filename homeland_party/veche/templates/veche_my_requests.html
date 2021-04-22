@@ -25,6 +25,7 @@
             {% if requests_user_need_to_approve %}
                 {% include 'geo_ten_map_modal.html' %}
                 {% include 'user_comment_in_request_join_geo_ten_modal.html' %}
+                {% include 'simple_modal.html' %}
 
                 <h1>Заявки, которые необходимо согласовать:</h1>
                     <table class="table">
@@ -66,7 +67,7 @@
                     </table>
             {% endif %}
 
-            {% if created_by_me_community_request %}
+            {% if created_by_user_community_request %}
                 <h1>Созданные мною заявки:</h1>
                 <table class="table">
                       <thead>
@@ -79,25 +80,25 @@
                       </thead>
                       <tbody>
                           <tr>
-                              <th scope="row">{{ created_by_me_community_request.community.get_geo }}</th>
+                              <th scope="row">{{ created_by_user_community_request.community.get_geo }}</th>
                               <td>
                                 <p>
                                     <span class="badge badge-info increase-size">
-                                        {{ created_by_me_community_request_stats.total_profiles }}
+                                        {{ created_by_user_community_request_stats.total_profiles }}
                                     </span>
                                 </p>
                               </td>
                               <td>
                                 <p>
                                     <span class="badge badge-success increase-size">
-                                        {{ created_by_me_community_request_stats.total_agreed }}
+                                        {{ created_by_user_community_request_stats.total_agreed }}
                                     </span>
                                 </p>
                               </td>
                               <td>
                                 <p>
                                     <span class="badge badge-danger increase-size">
-                                        {{ created_by_me_community_request_stats.total_rejected }}
+                                        {{ created_by_user_community_request_stats.total_rejected }}
                                     </span>
                                 </p>
                               </td>
@@ -106,59 +107,94 @@
                 </table>
             {% endif %}
 
-{#            {% if not requests_user_need_to_approve and not created_by_me_community_request %}#}
-{#                <p>Заявок нет</p>#}
-{#            {% endif %}#}
-            <h1>Мои закрытые заявки:</h1>
-                <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Адрес географической десятки</th>
-                          <th scope="col">Общее кол-во участников</th>
-                          <th scope="col">Одобрило</th>
-                          <th scope="col">Отклонило</th>
-                          <th scope="col">Статус заявки</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                      {% for request in created_by_me_community_request_solved %}
-                          <tr>
-                              <th scope="row">{{ forloop.counter }}</th>
-                              <th scope="row">{{ request.community.get_geo }}</th>
-                              <td>
-                                <p>
-                                    <span class="badge badge-info increase-size">
-                                        {{ request.get_request_stats.total_profiles }}
-                                    </span>
-                                </p>
-                              </td>
-                              <td>
-                                <p>
-                                    <span class="badge badge-success increase-size">
-                                        {{ request.get_request_stats.total_agreed }}
-                                    </span>
-                                </p>
-                              </td>
-                              <td>
-                                <p>
-                                    <span class="badge badge-danger increase-size">
-                                        {{ request.get_request_stats.total_rejected }}
-                                    </span>
-                                </p>
-                              </td>
-                              <td>
-                                  {% if request.is_ok %}
-                                      <span class="badge badge-success increase-size"><i class="fas fa-check"></i></span>
-                                  {% else %}
-                                      <span class="badge badge-danger increase-size"><i class="fas fa-times"></i></span>
-                                  {% endif %}
-                              </td>
-                          </tr>
-                      {% endfor %}
-                      </tbody>
-                </table>
+            {% if user_resolutions %}
+                <h1>Согласованные мною заявки:</h1>
+                    <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">#</th>
+                              <th scope="col">Автор заявки</th>
+                              <th scope="col">Адрес географической десятки</th>
+                              <th scope="col">Моё решение</th>
+                              <th scope="col">Дата</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for resolution in user_resolutions %}
+                              <tr>
+                                  <th scope="row">{{ forloop.counter }}</th>
+                                  <td><a href="{% url 'veche:user_card' resolution.community_request.author.pk %}">{{ resolution.community_request.author.username }}</a></td>
+                                  <td>{{ resolution.community_request.community.get_geo }}</td>
+                                  <td>
+                                    <p>
+                                      {% if resolution.is_ok %}
+                                          <span class="badge badge-success increase-size"><i class="fas fa-check"></i></span>
+                                      {% else %}
+                                          <span class="badge badge-danger increase-size"><i class="fas fa-times"></i></span>
+                                      {% endif %}
+                                    </p>
+                                  </td>
+                                  <td>
+                                      <p>{{ resolution.created_at|date:"d.m.Y" }}</p>
+                                  </td>
+                              </tr>
+                          {% endfor %}
+                          </tbody>
+                    </table>
 
+            {% endif %}
+
+            {% if created_by_user_community_request_solved %}
+                <h1>Мои закрытые заявки:</h1>
+                    <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">#</th>
+                              <th scope="col">Адрес географической десятки</th>
+                              <th scope="col">Одобрило</th>
+                              <th scope="col">Отклонило</th>
+                              <th scope="col">Статус заявки</th>
+                              <th scope="col">Дата</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          {% for request in created_by_user_community_request_solved %}
+                              <tr>
+                                  <th scope="row">{{ forloop.counter }}</th>
+                                  <td scope="row">{{ request.community.get_geo }}</td>
+                                  <td>
+                                    <p>
+                                        <span class="badge badge-success increase-size">
+                                            {{ request.get_request_stats.total_agreed }}
+                                        </span>
+                                    </p>
+                                  </td>
+                                  <td>
+                                    <p>
+                                        <span class="badge badge-danger increase-size">
+                                            {{ request.get_request_stats.total_rejected }}
+                                        </span>
+                                    </p>
+                                  </td>
+                                  <td>
+                                      {% if request.is_ok %}
+                                          <span class="badge badge-success increase-size"><i class="fas fa-check"></i></span>
+                                      {% else %}
+                                          <span class="badge badge-danger increase-size"><i class="fas fa-times"></i></span>
+                                      {% endif %}
+                                  </td>
+                                  <td>
+                                      <p>{{ request.updated_at|date:"d.m.Y" }}</p>
+                                  </td>
+                              </tr>
+                          {% endfor %}
+                          </tbody>
+                    </table>
+            {% endif %}
+
+            {% if not requests_user_need_to_approve and not created_by_user_community_request and not created_by_user_community_request_solved and not user_resolutions%}
+                <h1>Заявок нет</h1>
+            {% endif %}
         {% endblock %}
     </div>
 {% endblock container %}
@@ -167,7 +203,7 @@
 {% block scripts %}
 <script>
     {% if requests_user_need_to_approve %}
-        var myMap, currentPlacemark;
+        var myMap, currentPlacemark, requestId, resolutionUrl;
 
         $('#geoTenMapModal').on('hidden.bs.modal', function () {
             $('#map').empty()
@@ -211,6 +247,22 @@
             $('#userRequestCommentModal').modal('hide');
         });
 
+        $('#simpleModalClose').on('click', function(event) {
+            $('#simpleModal').modal('hide');
+        });
+
+        $('#simpleModalOk').on('click', function(event) {
+            console.log(resolutionUrl);
+            console.log(requestId);
+
+            $('#simpleModal').modal('hide');
+            if (resolutionUrl && requestId) {
+                sendRequest(resolutionUrl, requestId);
+            } else {
+                document.location.reload();
+            }
+        });
+
         $(".requestComment").click(function(ev) {
             var comment = $(ev.currentTarget).data('comment');
             $('#requestComment').text(comment);
@@ -230,33 +282,43 @@
                 url: url,
                 data: {'request_id': requestId},
                 success: function (response) {
-                    console.log(response);
-                    {#$('#responseJoinGeoTenModalHeader').removeClass('bg-danger');#}
-                    {#$('#responseJoinGeoTenModalHeader h4').text('Заявка успешно подана');#}
-                    {#$('#responseJoinGeoTenMessage').text('Ваша заявка успешно подана. Дальше вы будете перенаправлены на страницу ваших заявок, где можно отслеживать их статус.')#}
-                    {#$('#responseJoinGeoTenModal').modal('show');#}
+                    $('#simpleModalHeader').removeClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Заявка успешно обработана');
+                    $('#simpleModalMessage').text('Вы согласовали заявку');
+                    resolutionUrl = '';
+                    requestId = '';
+                    $('#simpleModal').modal('show');
                 },
                 error: function (response) {
-                    console.log(response);
-                    {#var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании заявки';#}
-                    {#$('#responseJoinGeoTenModalHeader').addClass('bg-danger');#}
-                    {#$('#responseJoinGeoTenModalHeader h4').text('Ошибка при создании заявки');#}
-                    {#$('#responseJoinGeoTenMessage').text(message);#}
-                    {#$('#responseJoinGeoTenModal').modal('show');#}
+                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при обработки заявки';
+                    $('#simpleModalHeader').addClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Ошибка при обработки заявки');
+                    $('#simpleModalMessage').text(message);
+                    resolutionUrl = '';
+                    requestId = '';
+                    $('#simpleModal').modal('show');
                 }
             })
         }
 
         $(".join-agree").click(function(ev) {
-            var requestId = $(ev.currentTarget).data('requestid');
-            var url = "{% url 'veche:agree_request' %}";
-            sendRequest(url, requestId);
+            requestId = $(ev.currentTarget).data('requestid');
+            resolutionUrl = "{% url 'veche:agree_request' %}";
+
+            $('#simpleModalHeader').removeClass('bg-danger');
+            $('#simpleModalHeader h4').text('Подтверждение действия');
+            $('#simpleModalMessage').text('Если вы примите заявку, пользователь будет добавлен в десятку. Принять заявку?');
+            $('#simpleModal').modal('show');
         });
 
         $(".join-reject").click(function(ev) {
-            var requestId = $(ev.currentTarget).data('requestid');
-            var url = "{% url 'veche:reject_request' %}";
-            sendRequest(url, requestId);
+            requestId = $(ev.currentTarget).data('requestid');
+            resolutionUrl = "{% url 'veche:reject_request' %}";
+
+            $('#simpleModalHeader').addClass('bg-danger');
+            $('#simpleModalHeader h4').text('Подтверждение действия');
+            $('#simpleModalMessage').text('Если вы отклоните заявку, пользователь не будет добавлен в десятку. Отклонить заявку?');
+            $('#simpleModal').modal('show');
         });
     {% endif %}
 </script>

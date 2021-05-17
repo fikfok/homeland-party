@@ -83,8 +83,7 @@ class Profile(GeoMixin, models.Model):
 
     def get_requests_user_need_to_approve(self) -> list:
         open_status = CommunityRequest.REQUEST_STATUS_OPEN_KEY
-        ten_type = Community.COMMUNITY_TYPE_TEN_KEY
-        geo_communities_qs = self.geo_community.all().filter(type=ten_type)
+        geo_communities_qs = self.get_geo_ten_communities_qs()
         result = []
         for geo_community in geo_communities_qs:
             requests = geo_community. \
@@ -113,3 +112,7 @@ class Profile(GeoMixin, models.Model):
             filter(community_request=community_request, author=self.user). \
             exists()
         return resolution_exists
+
+    def get_geo_ten_communities_qs(self):
+        ten_type = Community.COMMUNITY_TYPE_TEN_KEY
+        return self.geo_community.all().filter(type=ten_type)

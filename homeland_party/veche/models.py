@@ -45,15 +45,17 @@ class Community(GeoMixin, SafeDeleteModel, models.Model):
         return current_label
 
     def is_geo_ten_open(self):
-        from personal_cabinet.models.models import Profile
-
-        current_participiants_cnt = Profile.objects.filter(geo_community=self.pk).count()
-        return self.max_participants > current_participiants_cnt
+        profiles_qs = self.get_profiles_qs()
+        return self.max_participants > profiles_qs.count()
 
     def get_profiles_qs(self):
         from personal_cabinet.models.models import Profile
 
         return Profile.objects.filter(geo_community=self)
+
+    def is_geo_ten_complete(self):
+        profiles_qs = self.get_profiles_qs()
+        return self.max_participants == profiles_qs.count()
 
     def __str__(self):
         geo = self.get_geo()

@@ -143,11 +143,12 @@ class MyGeoTenView(CustomTemplateViewMixin, TemplateView):
         context = self.get_context_data()
         profile = self._get_profile()
         geo_ten_community = profile.get_geo_ten_communities_qs().first() if profile.user_in_geo_community() else None
+        profiles = geo_ten_community.get_profiles_qs() if geo_ten_community else []
         extra_context = {
-            'geo_ten_community': geo_ten_community
+            'geo_ten_community': geo_ten_community,
+            'profiles': profiles,
         }
         context.update(extra_context)
-
         return render(request, 'veche_my_geo_ten.html', context=context)
 
 

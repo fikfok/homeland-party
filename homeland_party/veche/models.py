@@ -1,4 +1,5 @@
 from collections import namedtuple
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -9,6 +10,14 @@ from personal_cabinet.mixins.geo_mixin import GeoMixin
 
 
 RequestStats = namedtuple('RequestStats', ('total_profiles', 'total_agreed', 'total_rejected'))
+
+
+def initiative_default_expire_at() -> datetime:
+    """
+    Значение по-умолчанию даты истекания срока согласования инициативы
+    :return: дата и время истечения срока годности приглашения
+    """
+    return datetime.now() + Initiative.APPROVAL_PERIOD_HOURS
 
 
 class Community(GeoMixin, SafeDeleteModel, models.Model):
@@ -56,6 +65,12 @@ class Community(GeoMixin, SafeDeleteModel, models.Model):
     def is_geo_ten_complete(self):
         profiles_qs = self.get_profiles_qs()
         return self.max_participants == profiles_qs.count()
+
+    def is_possible_to_create_initiative(self):
+        return self.geo_exists() and self.is_geo_ten_complete()
+
+    def get_initiatives(self):
+        return self.community_initiatives.all()
 
     def __str__(self):
         geo = self.get_geo()
@@ -138,3 +153,45 @@ class RequestResolution(SafeDeleteModel, models.Model):
 
     def is_ok(self):
         return self.resolution == self.RESOLUTION_AGREED_KEY
+
+
+class Initiative(SafeDeleteModel, models.Model):
+    # Время, отводимое на согласование инициативы
+    APPROVAL_PERIOD_HOURS = timedelta(hours=3 * 24)
+    # Минимальный процент одобрений, который должна набрать инициатива, чтобы считаться принятой
+    MIN_AGREE_PERCENT = 75 / 100
+
+    INITIATIVE_LABEL_LENGTH_LIMIT = 100
+
+    INITIATIVE_STATUS_OPEN_KEY = 'open'
+    INITIATIVE_STATUS_OPEN_LABEL = 'открыта'
+    INITIATIVE_STATUS_AGREED_KEY = 'agreed'
+    INITIATIVE_STATUS_AGREED_LABEL = 'принята'
+    INITIATIVE_STATUS_REJECTED_KEY = 'rejected'
+    INITIATIVE_STATUS_REJECTED_LABEL = 'отклонена'
+
+    STATUS_CHOICES = (
+        (INITIATIVE_STATUS_OPEN_KEY, INITIATIVE_STATUS_OPEN_LABEL),
+        (INITIATIVE_STATUS_AGREED_KEY, INITIATIVE_STATUS_AGREED_LABEL),
+        (INITIATIVE_STATUS_REJECTED_KEY, INITIATIVE_STATUS_REJECTED_LABEL),
+    )
+
+    author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
+    edited_at = models.DateTimeField(verbose_name='Дата правки', auto_now=True)
+    community = models.ForeignKey(to=Community, on_delete=models.CASCADE, related_name='community_initiatives')
+    initiative_label = models.CharField(verbose_name='Заголовок инициативы', max_length=INITIATIVE_LABEL_LENGTH_LIMIT)
+    initiative_text = models.TextField(verbose_name='Текст инициативы')
+    expire_at = models.DateTimeField(default=initiative_default_expire_at)
+    min_agree_percent = models.PositiveIntegerField(verbose_name='Минимальный процент одобрений',
+                                                    default=MIN_AGREE_PERCENT)
+    status = models.CharField(verbose_name='Статус инициативы', choices=STATUS_CHOICES, max_length=20,
+                              default=INITIATIVE_STATUS_OPEN_KEY)
+
+
+class MessageInitiative(SafeDeleteModel, models.Model):
+    initiative = models.ForeignKey(to=Initiative, on_delete=models.CASCADE, related_name='Initiative_messages')
+    author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
+    edited_at = models.DateTimeField(verbose_name='Дата правки', auto_now=True)
+    message = models.TextField(verbose_name='Текст сообщения')

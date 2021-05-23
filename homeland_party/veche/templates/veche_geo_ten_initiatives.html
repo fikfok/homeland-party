@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block container %}
+        <div id="content">
+            {% block content %}
+
+                {% include 'send_create_geo_ten_initiative_modal.html' %}
+                {% include 'simple_modal.html' %}
+
+                <div class="row">
+                    <div class="col-md-6 mt-3 mb-3">
+                        <button id="createGeoTenInitiativeButton" type="button" class="btn btn-primary">Создать новую инициативу</button>
+                    </div>
+                </div>
+                {% if initiatives %}
+                    <h1>Инициативы моей географической десятки:</h1>
+                    {% for initiative in initiatives %}
+                        <div class="row border border-primary rounded mb-3">
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col">
+                                        <h4>{{ initiative.initiative_label }}</h4>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <sub class="text-secondary"><i class="fa fa-comment-alt-lines"></i></sub>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <h1>Инициатив пока нет</h1>
+                {% endif %}
+
+            {% endblock %}
+        </div>
+{% endblock container %}
+
+
+{% block scripts %}
+    <script type="application/javascript">
+
+        $('#createGeoTenInitiativeClose').on('click', function(event) {
+            $('#createGeoTenInitiativeModal').modal('hide');
+        });
+
+        $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
+            document.location.reload();
+        });
+
+        $('#createGeoTenInitiativeOk').on('click', function(event) {
+            $('#createGeoTenInitiativeModal').modal('hide');
+            var initiativeLabel = $('#initiativeLabel').val();
+            var initiativeText = $('#initiativeText').val();
+
+            $.ajaxSetup({
+                beforeSend: function (xhr, settings) {
+                    var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                    xhr.setRequestHeader('X-CSRFToken', key);
+                }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'veche:geo_ten_initiatives' %}',
+                data: {'label': initiativeLabel, 'text': initiativeText},
+                success: function (response) {
+                    $('#simpleModalHeader').removeClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Инициатива успешно создана');
+                    $('#simpleModalMessage').text('Инициатива успешно создана');
+                    $('#simpleModal').modal('show');
+                },
+                error: function (response) {
+                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании инициативы';
+                    $('#simpleModalHeader').addClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Инициатива не создана');
+                    $('#simpleModalMessage').text(message);
+                    $('#simpleModal').modal('show');
+                }
+            })
+        });
+
+        $('#createGeoTenInitiativeButton').on('click', function(event) {
+            $('#createGeoTenInitiativeModal').modal('show')
+        })
+
+        $("#initiativeLabel, #initiativeText").on('change keyup paste', function() {
+            if($('#initiativeLabel').val().length * $('#initiativeText').val().length === 0 ){
+                $('#createGeoTenInitiativeOk').addClass('disabled');
+            } else {
+                $('#createGeoTenInitiativeOk').removeClass('disabled');
+            }
+        });
+
+    </script>
+{% endblock scripts %}

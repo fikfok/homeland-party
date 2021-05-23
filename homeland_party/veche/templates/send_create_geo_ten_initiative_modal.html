@@ -1,0 +1,35 @@
+<div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" id="createGeoTenInitiativeModal" aria-labelledby="createGeoTenInitiativeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div id="createGeoTenInitiativeModalHeader" class="modal-header text-center">
+                <h4 class="modal-title font-weight-bold">Создание новой инициативы</h4>
+                <button type="button" id="createGeoTenInitiativeClose" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col">
+                        <p>Укажите, пожалуйста, заголовок для инициативы (максимально {{ initiative_label_length_limit }} символов):</p>
+                        <textarea id="initiativeLabel" class="form-control m-1" type="text" rows="3" maxlength="{{ initiative_label_length_limit }}"></textarea>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <p>Укажите, пожалуйста, текст инициативы:</p>
+                        <textarea id="initiativeText" class="form-control m-1" type="text" rows="7"></textarea>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <sub>Обратите внимание, что выбор географического ареала для дальнейшей публикации инициативы
+                            вам будет предложен только после того как ваша десятка согласует данную инициативу</sub>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" class="btn btn-primary disabled" id="createGeoTenInitiativeOk">СОЗДАТЬ ИНИЦИАТИВУ</button>
+            </div>
+        </div>
+    </div>
+</div>

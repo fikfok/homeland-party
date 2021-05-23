@@ -1,14 +1,39 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block styles %}
+    <style>
+        .yandex-map {
+            width: {{ map_width }}px;
+            height: {{ map_height }}px;
+        }
+
+        .increase-size {
+            font-size: 1.2rem;
+        }
+
+    </style>
+{% endblock styles %}
+
+{% block scripts_head %}
+    <script src="https://api-maps.yandex.ru/2.1/?apikey={{ yandex_api_key }}&lang=ru_RU" type="text/javascript"></script>
+{% endblock scripts_head %}
+
 {% block container %}
         <div id="content">
             {% block content %}
                 <h1>Моя географическая десятка</h1>
                 {% if user_in_geo_community  %}
-                    <p>Ваша географическая десятка расположена по адресу: <strong>{{ geo_ten_community.get_geo }}</strong>.</p>
+                    {% include 'geo_ten_map_modal.html' %}
 
-                    {% if geo_ten_community.is_geo_ten_complete %}
+                    <p>Адрес географической десятки: <strong>{{ community.get_geo }}</strong>.</p>
+                    <p>Географическая десятка на карте:
+                        <span class="text-success geoMark" role="button" data-geocode="{{ community.get_geo.geo_lat }},{{ community.get_geo.geo_lon }}">
+                            <i class="fa fa-2x fa-map-marker-alt"></i>
+                        </span>
+                    </p>
+
+                    {% if community.is_geo_ten_complete %}
                         <p>Ваша географиеская десятка полностью укомплектована, готова публиковать инициативы и принимать участие в обсуждении инициатив других десяток.</p>
                     {% else %}
                         <p>Ваша географиеская десятка ещё не полностью укомплектована и пока не может публиковать инициативы и принимать участие в обсуждениях.</p>
@@ -41,5 +66,37 @@
 
 {% block scripts %}
     <script type="application/javascript">
+            var myMap, currentPlacemark, joinGeoTenUrl;
+
+            $('#geoTenMapModal').on('hidden.bs.modal', function () {
+                $('#map').empty()
+            });
+
+            $('#geoTenMapClose').on('click', function(event) {
+                $('#geoTenMapModal').modal('hide');
+            });
+
+            $('#geoTenMapOk').on('click', function(event) {
+                $('#geoTenMapModal').modal('hide');
+            });
+
+            $(".geoMark").click(function(ev) {
+                var cords = $(ev.currentTarget).data('geocode').split(',');
+
+                ymaps.ready(init);
+                function init() {
+                    myMap = new ymaps.Map('map', {
+                        center: cords,
+                        zoom: 7
+                    });
+                    myMap.geoObjects.removeAll();
+                    currentPlacemark = new ymaps.Placemark();
+                    currentPlacemark.geometry.setCoordinates(cords);
+                    myMap.geoObjects.add(currentPlacemark);
+                }
+
+                $('#geoTenMapModal').modal('show');
+            });
+
     </script>
 {% endblock scripts %}

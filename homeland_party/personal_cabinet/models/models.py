@@ -89,8 +89,7 @@ class Profile(GeoMixin, models.Model):
             requests = geo_community. \
                 community_requests. \
                 all(). \
-                filter(status=open_status). \
-                all()
+                filter(status=open_status)
             result += list(requests)
         result = [request for request in result if not self.did_user_resolve_request(request)]
         return result
@@ -116,3 +115,8 @@ class Profile(GeoMixin, models.Model):
     def get_geo_ten_communities_qs(self):
         ten_type = Community.COMMUNITY_TYPE_TEN_KEY
         return self.geo_community.all().filter(type=ten_type)
+
+    def get_first_geo_ten_community(self):
+        geo_ten_communities_qs = self.get_geo_ten_communities_qs()
+        community = geo_ten_communities_qs.first() if geo_ten_communities_qs else None
+        return community

@@ -101,6 +101,7 @@
 		    <ul class="dropdown-menu">
                 {% if user_in_geo_community %}
                     <li><a class="dropdown-item" href="{% url 'veche:my_geo_ten' %}"> Моя географическая десятка </a></li>
+                    <li><a class="dropdown-item" href="{% url 'veche:geo_ten_initiatives' %}"> Инициативы моей географической десятки </a></li>
                 {% else %}
                     {% if user_has_not_geo_community_request %}
                         <li><a class="dropdown-item" href="{% url 'veche:geo_ten' %}"> Создание географической десятки </a></li>

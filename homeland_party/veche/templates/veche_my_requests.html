@@ -252,9 +252,6 @@
         });
 
         $('#simpleModalOk').on('click', function(event) {
-            console.log(resolutionUrl);
-            console.log(requestId);
-
             $('#simpleModal').modal('hide');
             if (resolutionUrl && requestId) {
                 sendRequest(resolutionUrl, requestId);

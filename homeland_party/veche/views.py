@@ -257,13 +257,14 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
         community_request.save()
 
 
-class GeoTenInitiatives(CustomTemplateViewMixin, TemplateView):
+class GeoTenInitiativesView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         community = context['profile'].get_first_geo_ten_community()
         initiatives = community.get_initiatives if community else []
         initiative_label_length_limit = Initiative.INITIATIVE_LABEL_LENGTH_LIMIT
         extra_context = {
+            'community': community,
             'initiatives': initiatives,
             'initiative_label_length_limit': initiative_label_length_limit,
         }
@@ -290,7 +291,7 @@ class GeoTenInitiatives(CustomTemplateViewMixin, TemplateView):
                 'initiative_label': initiative_label,
                 'initiative_text': initiative_text,
             }
-            initiative = Initiative.objects.create(**data)
+            initiative = InitiativeView.objects.create(**data)
             response = JsonResponse({'message': 'Инициатива успешно создана'}, status=200)
         else:
             msg = (
@@ -298,4 +299,28 @@ class GeoTenInitiatives(CustomTemplateViewMixin, TemplateView):
                 'укомплектована'
             )
             response = JsonResponse({'message': msg}, status=200)
+        return response
+
+
+class InitiativeView(CustomTemplateViewMixin, TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        initiative_id = kwargs.get('initiative_id')
+        try:
+            initiative = Initiative.objects.get(pk=initiative_id)
+        except Exception:
+            return HttpResponse({'message': 'Инициатива не найдена'}, status=400)
+
+        profile = self._get_profile()
+        if not initiative.does_user_have_access(profile):
+            return HttpResponse({'message': 'У вас нет доступа к инициативе'}, status=400)
+
+        context = self.get_context_data()
+        community = context['profile'].get_first_geo_ten_community()
+        extra_context = {
+            'community': community,
+            'initiative': initiative,
+        }
+        context.update(extra_context)
+        response = render(request, 'veche_initiative.html', context=context)
         return response

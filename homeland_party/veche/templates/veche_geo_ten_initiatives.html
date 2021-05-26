@@ -5,46 +5,57 @@
         <div id="content">
             {% block content %}
 
-                {% include 'send_create_geo_ten_initiative_modal.html' %}
+                {% include 'create_geo_ten_initiative_modal.html' %}
                 {% include 'simple_modal.html' %}
-
                 <div class="row">
-                    <div class="col-md-6 mt-3 mb-3">
+                    <div class="col-md-6 mt-3 mb-4">
                         <button id="createGeoTenInitiativeButton" type="button" class="btn btn-primary">Создать новую инициативу</button>
                     </div>
                 </div>
                 {% if initiatives %}
                     <h1>Инициативы моей географической десятки:</h1>
-                    {% for initiative in initiatives %}
-                        <div class="row border border-primary rounded mb-3">
-                            <div class="col">
-                                <div class="row">
-                                    <div class="col">
-                                        <h4>{{ initiative.initiative_label }}</h4>
+                    <div class="col">
+                        {% for initiative in initiatives %}
+                            <div class="row border border-primary rounded mb-3">
+                                <div class="col">
+                                    <div class="row mb-2">
+                                        <div class="col">
+                                            <h4><a href="{% url 'veche:initiative' initiative.pk %}">{{ initiative.initiative_label }}</a></h4>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
+                                    <div class="row mb-2">
+                                        <div class="col-md-4">
+                                            <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p class="mb-0 text-secondary text-success">Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p class="mb-0 text-secondary text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</p>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <i class="text-secondary fa fa-comments"> {{ initiative.messages_count }}</i>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <sub class="text-secondary"><i class="fa fa-comment-alt-lines"></i></sub>
-                                    </div>
-                                </div>
 
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% else %}
                     <h1>Инициатив пока нет</h1>
                 {% endif %}
-
             {% endblock %}
         </div>
 {% endblock container %}

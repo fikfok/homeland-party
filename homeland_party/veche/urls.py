@@ -1,7 +1,7 @@
 from django.urls import re_path
 
 from .views import MainVecheView, GeoTenView, JoinGeoTenView, MyGeoTenView, GeoCommunityParticipiants, UserCardView, \
-    MyRequestsView, GeoTenInitiatives
+    MyRequestsView, GeoTenInitiativesView, InitiativeView
 
 urlpatterns = [
     re_path(r'^$', MainVecheView.as_view(), name='veche'),
@@ -14,5 +14,6 @@ urlpatterns = [
     re_path(r'^my_requests$', MyRequestsView.as_view(), name='my_requests'),
     re_path(r'^my_requests/agree$', MyRequestsView.as_view(), name='agree_request'),
     re_path(r'^my_requests/reject$', MyRequestsView.as_view(), name='reject_request'),
-    re_path(r'^geo_ten_initiatives$', GeoTenInitiatives.as_view(), name='geo_ten_initiatives'),
+    re_path(r'^geo_ten_initiatives$', GeoTenInitiativesView.as_view(), name='geo_ten_initiatives'),
+    re_path(r'^initiative/(?P<initiative_id>[0-9]+)$$', InitiativeView.as_view(), name='initiative'),
 ]

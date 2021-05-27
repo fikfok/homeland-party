@@ -291,7 +291,7 @@ class GeoTenInitiativesView(CustomTemplateViewMixin, TemplateView):
                 'initiative_label': initiative_label,
                 'initiative_text': initiative_text,
             }
-            initiative = InitiativeView.objects.create(**data)
+            initiative = Initiative.objects.create(**data)
             response = JsonResponse({'message': 'Инициатива успешно создана'}, status=200)
         else:
             msg = (

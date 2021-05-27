@@ -23,7 +23,7 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
         user = request.user
         profile = self._get_profile()
         if not profile:
-            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+            return HttpResponse('Отсутствует профиль пользователя', status=400)
 
         geo = profile.get_geo()
         context = self.get_context_data()
@@ -38,7 +38,7 @@ class GeoTenView(CustomTemplateViewMixin, TemplateView):
         user = request.user
         profile = self._get_profile()
         if not profile:
-            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+            return HttpResponse('Отсутствует профиль пользователя', status=400)
 
         user_can_create_geo_community = profile.user_can_create_geo_community()
         if user_can_create_geo_community:
@@ -71,7 +71,7 @@ class JoinGeoTenView(CustomTemplateViewMixin, TemplateView):
         if context['user_has_not_geo_community_request']:
             profile = self._get_profile()
             if not profile:
-                return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+                return HttpResponse('Отсутствует профиль пользователя', status=400)
 
             geo = profile.get_geo()
             geo_tens_for_join_qs = Community.get_geo_tens_for_join()
@@ -167,7 +167,7 @@ class MyRequestsView(CustomTemplateViewMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         profile = self._get_profile()
         if not profile:
-            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+            return HttpResponse('Отсутствует профиль пользователя', status=400)
 
         requests_user_need_to_approve = profile.get_requests_user_need_to_approve()
         created_by_user_community_request = profile.get_created_by_user_community_request()
@@ -309,11 +309,11 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
         try:
             initiative = Initiative.objects.get(pk=initiative_id)
         except Exception:
-            return HttpResponse({'message': 'Инициатива не найдена'}, status=400)
+            return HttpResponse('Инициатива не найдена', status=400)
 
         profile = self._get_profile()
         if not initiative.does_user_have_access(profile):
-            return HttpResponse({'message': 'У вас нет доступа к инициативе'}, status=400)
+            return HttpResponse('У вас нет доступа к инициативе', status=400)
 
         context = self.get_context_data()
         community = context['profile'].get_first_geo_ten_community()

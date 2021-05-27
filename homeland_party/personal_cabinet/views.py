@@ -80,7 +80,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
         user = request.user
         profile = self._get_profile()
         if not profile:
-            return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+            return HttpResponse('Отсутствует профиль пользователя', status=400)
 
         geo = profile.get_geo()
         data = profile.get_form_data()
@@ -106,7 +106,7 @@ class ProfileView(CustomTemplateViewMixin, TemplateView):
             context = self.get_context_data()
             profile = self._get_profile()
             if not profile:
-                return HttpResponse({'message': 'Отсутствует профиль пользователя'}, status=400)
+                return HttpResponse('Отсутствует профиль пользователя', status=400)
 
             geo = profile.get_geo()
             extra_context = {

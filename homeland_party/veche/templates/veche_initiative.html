@@ -1,12 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block styles %}
+    <style>
+        hr {
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+          border: 0;
+          border-top: 0.1px solid rgba(0, 0, 0, 0.1);
+        }
+    </style>
+{% endblock styles %}
+
 {% block container %}
         <div id="content">
             {% block content %}
-                <h1>Инициатива: "{{ initiative.initiative_label }}"</h1>
-                <p>Текст инициативы:</p>
-                <p>{{ initiative.initiative_text }}</p>
+                <div class="border shadow p-3 mb-5 bg-white rounded mb-3">
+                    <div class="col">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <h1>Инициатива: "{{ initiative.initiative_label }}"</h1>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <hr class="rounded">
+                                <p>{{ initiative.initiative_text }}</p>
+                                <hr class="rounded">
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-0 text-secondary text-success">Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <p class="mb-0 text-secondary text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
+                            </div>
+                            <div class="col-md-3">
+                                <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
+                            </div>
+                            <div class="col-md-3">
+                                <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
+                            </div>
+                            <div class="col-md-2">
+                                <i class="text-secondary fa fa-comments"> {{ initiative.messages_count }}</i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             {% endblock %}
         </div>
 {% endblock container %}

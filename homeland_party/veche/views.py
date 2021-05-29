@@ -1,3 +1,5 @@
+from typing import Union
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -10,7 +12,7 @@ from django.views.generic import TemplateView
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX, YANDEX_API_KEY
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models.models import Profile
-from veche.models import Community, CommunityRequest, RequestStats, RequestResolution, Initiative
+from veche.models import Community, CommunityRequest, RequestStats, RequestResolution, Initiative, MessageInitiative
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -306,15 +308,11 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         initiative_id = kwargs.get('initiative_id')
-        try:
-            initiative = Initiative.objects.get(pk=initiative_id)
-        except Exception:
-            return HttpResponse('Инициатива не найдена', status=400)
+        response_400 = self._check_initiative(initiative_id)
+        if response_400:
+            return response_400
 
-        profile = self._get_profile()
-        if not initiative.does_user_have_access(profile):
-            return HttpResponse('У вас нет доступа к инициативе', status=400)
-
+        initiative = Initiative.objects.get(pk=initiative_id)
         context = self.get_context_data()
         community = context['profile'].get_first_geo_ten_community()
         extra_context = {
@@ -324,3 +322,33 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
         context.update(extra_context)
         response = render(request, 'veche_initiative.html', context=context)
         return response
+
+    def post(self, request, *args, **kwargs):
+        initiative_id = kwargs.get('initiative_id')
+        response_400 = self._check_initiative(initiative_id, is_resp_http=False)
+        if response_400:
+            return response_400
+
+        initiative = Initiative.objects.get(pk=initiative_id)
+        if initiative.status != Initiative.INITIATIVE_STATUS_OPEN_KEY:
+            return JsonResponse({'message': 'Инициатива закрыта. Добавлять сообщения нельзя'}, status=400)
+
+        message_text = escape(request.POST.get('message', ''))
+        message_initiative = MessageInitiative.objects.create(initiative=initiative, author=request.user,
+                                                              message=message_text)
+
+        return JsonResponse({}, status=200)
+
+    def _check_initiative(self, initiative_id, is_resp_http=True) -> Union[HttpResponse, JsonResponse]:
+        result = None
+        try:
+            initiative = Initiative.objects.get(pk=initiative_id)
+        except Exception:
+            msg = 'Инициатива не найдена'
+            result = HttpResponse(msg, status=400) if is_resp_http else JsonResponse({'message': msg}, status=400)
+        else:
+            profile = self._get_profile()
+            if not initiative.does_user_have_access(profile):
+                msg = 'У вас нет доступа к инициативе'
+                result = HttpResponse(msg, status=400) if is_resp_http else JsonResponse({'message': msg}, status=400)
+        return result

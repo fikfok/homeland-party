@@ -15,6 +15,8 @@
 {% block container %}
         <div id="content">
             {% block content %}
+                {% include 'simple_modal.html' %}
+
                 <div class="border shadow p-3 mb-5 bg-white rounded mb-3">
                     <div class="col">
                         <div class="row mb-2">
@@ -58,6 +60,28 @@
                     </div>
                 </div>
 
+                <div id="" class="row">
+                    <div class="col">
+                        <button id="addInitiativeMessage" class="btn btn-primary mb-4" type="button" data-toggle="collapse" data-target="#collapseExample"
+                                aria-expanded="false" aria-controls="collapseExample">
+                           Добавить сообщение
+                        </button>
+                        <div class="collapse" id="collapseExample">
+                            <div class="row mb-1">
+                                <div class="col">
+                                    <textarea id="initiativeMessage" class="form-control" type="text" rows="5"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button id="sendInitiativeMessage" type="button" class="btn btn-primary">Отправить сообщение</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             {% endblock %}
         </div>
 {% endblock container %}
@@ -65,19 +89,20 @@
 
 {% block scripts %}
     <script type="application/javascript">
+        var buttonLabels = ['Отменить', 'Добавить сообщение'];
+        var clicker = true;
 
-        $('#createGeoTenInitiativeClose').on('click', function(event) {
-            $('#createGeoTenInitiativeModal').modal('hide');
+        $('#addInitiativeMessage').on('click', function(event) {
+            clicker = !clicker;
+            $('#addInitiativeMessage').text(buttonLabels[clicker ? 1 : 0]);
         });
 
         $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
-            document.location.reload();
+            $('#simpleModal').modal('hide');
         });
 
-        $('#createGeoTenInitiativeOk').on('click', function(event) {
-            $('#createGeoTenInitiativeModal').modal('hide');
-            var initiativeLabel = $('#initiativeLabel').val();
-            var initiativeText = $('#initiativeText').val();
+        $('#sendInitiativeMessage').on('click', function(event) {
+            var message = $('#initiativeMessage').val();
 
             $.ajaxSetup({
                 beforeSend: function (xhr, settings) {
@@ -88,34 +113,19 @@
 
             $.ajax({
                 type: 'POST',
-                url: '{% url 'veche:geo_ten_initiatives' %}',
-                data: {'label': initiativeLabel, 'text': initiativeText},
+                url: '{% url 'veche:initiative' initiative.pk %}',
+                data: {'message': message},
                 success: function (response) {
-                    $('#simpleModalHeader').removeClass('bg-danger');
-                    $('#simpleModalHeader h4').text('Инициатива успешно создана');
-                    $('#simpleModalMessage').text('Инициатива успешно создана');
-                    $('#simpleModal').modal('show');
+                    document.location.reload();
                 },
                 error: function (response) {
-                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании инициативы';
+                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании сообщения';
                     $('#simpleModalHeader').addClass('bg-danger');
-                    $('#simpleModalHeader h4').text('Инициатива не создана');
+                    $('#simpleModalHeader h4').text('Сообщение не создано');
                     $('#simpleModalMessage').text(message);
                     $('#simpleModal').modal('show');
                 }
             })
-        });
-
-        $('#createGeoTenInitiativeButton').on('click', function(event) {
-            $('#createGeoTenInitiativeModal').modal('show')
-        })
-
-        $("#initiativeLabel, #initiativeText").on('change keyup paste', function() {
-            if($('#initiativeLabel').val().length * $('#initiativeText').val().length === 0 ){
-                $('#createGeoTenInitiativeOk').addClass('disabled');
-            } else {
-                $('#createGeoTenInitiativeOk').removeClass('disabled');
-            }
         });
 
     </script>

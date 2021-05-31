@@ -341,7 +341,10 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
             return JsonResponse({'message': 'Инициатива закрыта. Добавлять сообщения нельзя'}, status=400)
 
         message_text = escape(request.POST.get('message', ''))
-        message_initiative = MessageInitiative.objects.create(initiative=initiative, author=request.user,
+        if len(message_text.replace(' ', '')) == 0:
+            return JsonResponse({'message': 'Нельзя добавить пустое сообщение'}, status=400)
+
+        MessageInitiative.objects.create(initiative=initiative, author=request.user,
                                                               message=message_text)
 
         return JsonResponse({}, status=200)

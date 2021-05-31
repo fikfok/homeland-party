@@ -13,45 +13,47 @@
                     </div>
                 </div>
                 {% if initiatives %}
-                    <h1>Инициативы моей географической десятки:</h1>
-                    <div class="col">
-                        {% for initiative in initiatives %}
-                            <div class="border shadow p-3 mb-5 bg-white rounded mb-3">
-                                <div class="col">
-                                    <div class="row mb-2">
-                                        <div class="col">
-                                            <h4><a href="{% url 'veche:initiative' initiative.pk %}">{{ initiative.initiative_label }}</a></h4>
+                    <div class="row">
+                        <h1>Инициативы моей географической десятки:</h1>
+                        <div class="col">
+                            {% for initiative in initiatives %}
+                                <div class="border shadow p-3 mb-5 bg-white rounded mb-3">
+                                    <div class="col">
+                                        <div class="row mb-2">
+                                            <div class="col">
+                                                <h4><a href="{% url 'veche:initiative' initiative.pk %}">{{ initiative.initiative_label }}</a></h4>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-4">
-                                            <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
+                                        <div class="row mb-2">
+                                            <div class="col-md-4">
+                                                <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0 text-secondary text-success">Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}</p>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p class="mb-0 text-secondary text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</p>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <p class="mb-0 text-secondary text-success">Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}</p>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <i class="text-secondary fa fa-comments"> {{ initiative.messages_count }}</i>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <p class="mb-0 text-secondary text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <sub class="text-secondary">Автор: {{ initiative.author.username }}</sub>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <sub class="text-secondary">Дата создания: {{ initiative.created_at|date:"d.m.Y H:i:s" }}</sub>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <sub class="text-secondary">Дата закрытия: {{ initiative.expire_at|date:"d.m.Y H:i:s" }}</sub>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <i class="text-secondary fa fa-comments"> {{ initiative.messages_count }}</i>
-                                        </div>
-                                    </div>
 
+                                    </div>
                                 </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     </div>
                 {% else %}
                     <h1>Инициатив пока нет</h1>

@@ -60,25 +60,40 @@
                     </div>
                 </div>
 
-                <div id="" class="row">
-                    <div class="col">
-                        <button id="addInitiativeMessage" class="btn btn-primary mb-4" type="button" data-toggle="collapse" data-target="#collapseExample"
-                                aria-expanded="false" aria-controls="collapseExample">
-                           Добавить сообщение
-                        </button>
-                        <div class="collapse" id="collapseExample">
+                {% for message in initiative.initiative_messages.all %}
+                <div class="border shadow p-3 mb-3 bg-white rounded mb-3">
+                    <div class="row">
+                        <div class="col-md-2 border-right">
+                            <span class="text-info">{{ message.author.username }}</span>
+                        </div>
+                        <div class="col-md-10">
                             <div class="row mb-1">
                                 <div class="col">
-                                    <textarea id="initiativeMessage" class="form-control" type="text" rows="5"></textarea>
+                                    {{ message.message }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <sub class="text-secondary">Отправлено: {{ message.created_at|date:"d.m.Y H:i:s" }}</sub>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <button id="sendInitiativeMessage" type="button" class="btn btn-primary">Отправить сообщение</button>
-                                </div>
-                            </div>
                         </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <hr class="rounded mt-4 mb-4">
+
+                <div class="row mb-3">
+                    <div class="col">
+                        <textarea id="initiativeMessage" class="form-control" type="text" rows="5"></textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-5">
+                    <div class="col-md-6">
+                        <button id="sendInitiativeMessage" type="button" class="btn btn-primary">Отправить сообщение</button>
                     </div>
                 </div>
 
@@ -89,14 +104,6 @@
 
 {% block scripts %}
     <script type="application/javascript">
-        var buttonLabels = ['Отменить', 'Добавить сообщение'];
-        var clicker = true;
-
-        $('#addInitiativeMessage').on('click', function(event) {
-            clicker = !clicker;
-            $('#addInitiativeMessage').text(buttonLabels[clicker ? 1 : 0]);
-        });
-
         $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
             $('#simpleModal').modal('hide');
         });

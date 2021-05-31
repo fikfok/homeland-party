@@ -181,6 +181,10 @@ class Initiative(SafeDeleteModel, models.Model):
         (INITIATIVE_STATUS_REJECTED_KEY, INITIATIVE_STATUS_REJECTED_LABEL),
     )
 
+    class Meta:
+        verbose_name = 'Инициатива'
+        verbose_name_plural = 'Инициативы'
+
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     edited_at = models.DateTimeField(verbose_name='Дата правки', auto_now=True)
@@ -219,13 +223,23 @@ class Initiative(SafeDeleteModel, models.Model):
             result = profile.pk in all_profiles_ids
         return result
 
+    def __str__(self):
+        return f'{self.initiative_label} ({self.author.username}: {self.created_at.strftime("%d.%m.%Y %H:%M:%S")})'
+
 
 class MessageInitiative(SafeDeleteModel, models.Model):
+    class Meta:
+        verbose_name = 'Сообщения инициативы'
+        verbose_name_plural = 'Сообщения инициатив'
+
     initiative = models.ForeignKey(to=Initiative, on_delete=models.CASCADE, related_name='initiative_messages')
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     edited_at = models.DateTimeField(verbose_name='Дата правки', auto_now=True)
     message = models.TextField(verbose_name='Текст сообщения')
+
+    def __str__(self):
+        return f'{self.message[:50]} ({self.author.username}: {self.created_at.strftime("%d.%m.%Y %H:%M:%S")})'
 
 
 class ResolutionInitiative(SafeDeleteModel, models.Model):

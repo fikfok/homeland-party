@@ -123,6 +123,7 @@
                 url: '{% url 'veche:initiative' initiative.pk %}',
                 data: {'message': message},
                 success: function (response) {
+                    $('#initiativeMessage').val('');
                     document.location.reload();
                 },
                 error: function (response) {

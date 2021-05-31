@@ -1,6 +1,7 @@
 from typing import Union
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -305,6 +306,7 @@ class GeoTenInitiativesView(CustomTemplateViewMixin, TemplateView):
 
 
 class InitiativeView(CustomTemplateViewMixin, TemplateView):
+    MESSAGES_ON_PAGE = 10
 
     def get(self, request, *args, **kwargs):
         initiative_id = kwargs.get('initiative_id')
@@ -315,9 +317,14 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
         initiative = Initiative.objects.get(pk=initiative_id)
         context = self.get_context_data()
         community = context['profile'].get_first_geo_ten_community()
+        messages_qs = initiative.initiative_messages.all().order_by('created_at')
+        paginator = Paginator(messages_qs, self.MESSAGES_ON_PAGE)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
         extra_context = {
             'community': community,
             'initiative': initiative,
+            'page_obj': page_obj,
         }
         context.update(extra_context)
         response = render(request, 'veche_initiative.html', context=context)

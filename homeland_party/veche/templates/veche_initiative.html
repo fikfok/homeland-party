@@ -143,7 +143,8 @@
                     }
 
                     if (pageNum) {
-                        window.location.href = "?page=" + pageNum + messageID;
+                        window.location.replace("?page=" + pageNum + messageID);
+                        window.location.reload();
                     } else {
                         document.location.reload();
                     }

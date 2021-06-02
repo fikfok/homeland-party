@@ -344,10 +344,11 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
         if len(message_text.replace(' ', '')) == 0:
             return JsonResponse({'message': 'Нельзя добавить пустое сообщение'}, status=400)
 
-        MessageInitiative.objects.create(initiative=initiative, author=request.user,
-                                                              message=message_text)
+        new_message = MessageInitiative.objects.create(initiative=initiative, author=request.user, message=message_text)
 
-        return JsonResponse({}, status=200)
+        messages_qs = initiative.initiative_messages.all().order_by('created_at')
+        paginator = Paginator(messages_qs, self.MESSAGES_ON_PAGE)
+        return JsonResponse({'pageNum': paginator.num_pages, 'message_id': new_message.pk}, status=200)
 
     def _check_initiative(self, initiative_id, is_resp_http=True) -> Union[HttpResponse, JsonResponse]:
         result = None
@@ -362,3 +363,8 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
                 msg = 'У вас нет доступа к инициативе'
                 result = HttpResponse(msg, status=400) if is_resp_http else JsonResponse({'message': msg}, status=400)
         return result
+
+
+class ResolutionInitiativeView(CustomTemplateViewMixin, TemplateView):
+    def post(self, request, *args, **kwargs):
+        return JsonResponse({}, status=200)

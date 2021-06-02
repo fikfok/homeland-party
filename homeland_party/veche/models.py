@@ -254,8 +254,8 @@ class ResolutionInitiative(SafeDeleteModel, models.Model):
     )
 
     class Meta:
-        verbose_name = 'Решение по заявке на вступление в сообщество'
-        verbose_name_plural = 'Решения по заявке на вступление в сообщество'
+        verbose_name = 'Решение по инициативе'
+        verbose_name_plural = 'Решения по инициативе'
 
     author = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)

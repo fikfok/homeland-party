@@ -61,10 +61,10 @@
                 </div>
 
                 {% for message in page_obj %}
-                <div class="border shadow p-3 mb-3 bg-white rounded mb-3">
+                <div id="message{{ message.pk }}" class="border shadow p-3 mb-3 bg-white rounded mb-3">
                     <div class="row">
                         <div class="col-md-2 border-right">
-                            <span class="text-info">{{ message.author.username }}</span>
+                            <span class="text-info text-break">{{ message.author.username }}</span>
                         </div>
                         <div class="col-md-10">
                             <div class="row mb-1">
@@ -73,8 +73,13 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col">
+                                <div class="col-md-6">
                                     <sub class="text-secondary">Отправлено: {{ message.created_at|date:"d.m.Y H:i:s" }}</sub>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <sub class="text-secondary">
+                                        [<a href="{% url 'veche:initiative' initiative.pk %}?page={{ page_obj.number }}#message{{ message.pk }}">ID сообщения: {{ message.pk }}]</a>
+                                    </sub>
                                 </div>
                             </div>
 
@@ -83,7 +88,7 @@
                 </div>
                 {% endfor %}
 
-                <span>Страницы:
+                <span id="paginator">Страницы:
                     {% for page_num in page_obj.paginator.page_range %}
                         <a class="btn {% if page_obj.number == page_num %} btn-primary {% else %} btn-outline-primary {% endif %}" href="?page={{ page_num }}" role="button">{{ page_num }}</a>
                     {% endfor %}
@@ -129,7 +134,19 @@
                 data: {'message': message},
                 success: function (response) {
                     $('#initiativeMessage').val('');
-                    document.location.reload();
+                    var pageNum = '';
+                    var messageID = '';
+
+                    if (response) {
+                        pageNum = response.pageNum ? response.pageNum : '';
+                        messageID = '#' + (response.message_id ? ('message' + response.message_id) : 'paginator');
+                    }
+
+                    if (pageNum) {
+                        window.location.href = "?page=" + pageNum + messageID;
+                    } else {
+                        document.location.reload();
+                    }
                 },
                 error: function (response) {
                     var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании сообщения';

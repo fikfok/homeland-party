@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from homeland_party.const import DEFAULT_LAT, DEFAULT_LON
 from personal_cabinet.mixins.geo_mixin import GeoMixin
-from veche.models import Community, CommunityRequest, RequestResolution
+from veche.models import Community, CommunityRequest, RequestResolution, ResolutionInitiative
 
 
 class Profile(GeoMixin, models.Model):
@@ -120,3 +120,16 @@ class Profile(GeoMixin, models.Model):
         geo_ten_communities_qs = self.get_geo_ten_communities_qs()
         community = geo_ten_communities_qs.first() if geo_ten_communities_qs else None
         return community
+
+    def did_user_check_initiative(self, initiative) -> bool:
+        result = False
+        resolutions_qs = initiative.initiative_resolutions.all()
+        for resolution in resolutions_qs:
+            if self.user.pk == resolution.author.pk:
+                result = True
+                break
+        return result
+
+    def get_user_resolution_for_initiative(self, initiative):
+        resolution = ResolutionInitiative.objects.filter(initiative=initiative, author=self.user).first()
+        return resolution if resolution else None

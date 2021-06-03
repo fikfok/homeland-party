@@ -16,6 +16,7 @@
         <div id="content">
             {% block content %}
                 {% include 'simple_modal.html' %}
+                {% include 'user_comment_in_initiative_reject_modal.html' %}
 
                 <div class="border shadow p-3 mb-5 bg-white rounded mb-3">
                     <div class="col">
@@ -31,6 +32,41 @@
                                 <hr class="rounded">
                             </div>
                         </div>
+
+                        {% if user_checked_initiative %}
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <button id="agreeInitiative" type="button" class="btn btn-success mb-1" disabled>Поддержать</button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button id="rejectInitiative" type="button" class="btn btn-danger mb-1" disabled>Отклонить</button>
+                                </div>
+                            </div>
+
+                            <div class="row mb-1">
+                                <div class="col">
+                                    {% if user_resolution_for_initiative.is_ok %}
+                                        <p class="mb-0 text-secondary text-success">Вы поддержали инициативу <i class="fa fa-thumbs-up"></i></p>
+                                    {% else %}
+                                        <p class="mb-3 text-secondary text-danger">Вы отклонили инициативу <i class="fa fa-thumbs-down"></i></p>
+                                        <p class="mb-1">Ваш комментарий:</p>
+                                        <p class="text-secondary">{{ user_resolution_for_initiative.message }}</p>
+                                    {% endif %}
+                                    <hr class="rounded">
+                                </div>
+                            </div>
+
+                        {% else %}
+                            <div class="row mb-4">
+                                <div class="col-md-3">
+                                    <button id="agreeInitiative" type="button" class="btn btn-success">Поддержать</button>
+                                </div>
+                                <div class="col-md-3">
+                                    <button id="rejectInitiative" type="button" class="btn btn-danger">Отклонить</button>
+                                </div>
+                            </div>
+                        {% endif %}
+
                         <div class="row mb-2">
                             <div class="col-md-4">
                                 <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
@@ -114,38 +150,110 @@
 
 {% block scripts %}
     <script type="application/javascript">
+        let pageNum;
+        let messageID;
+        let sPageURL = window.location.search.substring(1);
+        let sURLVariables = sPageURL.split('&');
+        let currentPage = sURLVariables[0].split('=')[1];
+        let doReload = false;
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
+                xhr.setRequestHeader('X-CSRFToken', key);
+            }
+        });
+
+        {% if not user_checked_initiative %}
+            $('#agreeInitiative').on('click', function(event) {
+                $.ajax({
+                type: 'POST',
+                url: '{% url 'veche:agree_initiative' initiative.pk %}',
+                data: {},
+                success: function (response) {
+                    $('#simpleModalHeader').removeClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Ваше решение');
+                    $('#simpleModalMessage').text('Вы поддержали инициативу');
+                    $('#simpleModal').modal('show');
+                    doReload = true;
+                },
+                error: function (response) {
+                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при отправке решения';
+                    $('#simpleModalHeader').addClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Ошибка при отправке решения');
+                    $('#simpleModalMessage').text(message);
+                    $('#simpleModal').modal('show');
+                    doReload = true;
+                }
+                })
+            });
+
+            $('#rejectInitiativeCommentClose, #rejectInitiativeCommentCancel').on('click', function(event) {
+                $('#rejectInitiativeCommentModal').modal('hide');
+            });
+
+            $('#rejectInitiative').on('click', function(event) {
+                $('#rejectInitiativeCommentModal').modal('show');
+
+            });
+
+            $('#rejectInitiativeCommentSend').on('click', function(event) {
+            var message = $('#rejectInitiativeComment').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '{% url 'veche:reject_initiative' initiative.pk %}',
+                data: {'message': message},
+                success: function (response) {
+                    $('#rejectInitiativeCommentModal').modal('hide');
+                    $('#simpleModalHeader').removeClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Ваше решение');
+                    $('#simpleModalMessage').text('Вы отклонили инициативу');
+                    $('#simpleModal').modal('show');
+                    doReload = true;
+                },
+                error: function (response) {
+                    $('#rejectInitiativeCommentModal').modal('hide');
+                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при отправке решения';
+                    $('#simpleModalHeader').addClass('bg-danger');
+                    $('#simpleModalHeader h4').text('Ошибка при отправке решения');
+                    $('#simpleModalMessage').text(message);
+                    $('#simpleModal').modal('show');
+                    doReload = true;
+                }
+            })
+            });
+
+        {% endif %}
+
         $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
             $('#simpleModal').modal('hide');
+            if (doReload) {
+                document.location.reload();
+            }
         });
 
         $('#sendInitiativeMessage').on('click', function(event) {
             var message = $('#initiativeMessage').val();
-
-            $.ajaxSetup({
-                beforeSend: function (xhr, settings) {
-                    var key = document.querySelector("[name=csrfmiddlewaretoken]").value;
-                    xhr.setRequestHeader('X-CSRFToken', key);
-                }
-            });
 
             $.ajax({
                 type: 'POST',
                 url: '{% url 'veche:initiative' initiative.pk %}',
                 data: {'message': message},
                 success: function (response) {
-                    $('#initiativeMessage').val('');
-                    var pageNum = '';
-                    var messageID = '';
+                    pageNum = '';
+                    messageID = '';
 
+                    $('#initiativeMessage').val('');
                     if (response) {
                         pageNum = response.pageNum ? response.pageNum : '';
                         messageID = '#' + (response.message_id ? ('message' + response.message_id) : 'paginator');
                     }
 
-                    if (pageNum) {
-                        window.location.replace("?page=" + pageNum + messageID);
-                        window.location.reload();
+                    if (parseInt(pageNum, 10) !== parseInt(currentPage, 10)) {
+                        window.location.href = "?page=" + pageNum + messageID;
                     } else {
+                        window.location.replace("?page=" + pageNum + messageID);
                         document.location.reload();
                     }
                 },

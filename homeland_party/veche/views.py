@@ -1,5 +1,3 @@
-from typing import Union
-
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -13,7 +11,9 @@ from django.views.generic import TemplateView
 from homeland_party.const import MAP_WIDTH_PX, MAP_HEIGHT_PX, YANDEX_API_KEY
 from homeland_party.mixins import CustomTemplateViewMixin
 from personal_cabinet.models.models import Profile
-from veche.models import Community, CommunityRequest, RequestStats, RequestResolution, Initiative, MessageInitiative
+from veche.mixins import InitiativeViewMixis
+from veche.models import Community, CommunityRequest, RequestStats, RequestResolution, Initiative, MessageInitiative, \
+    ResolutionInitiative
 
 
 class MainVecheView(CustomTemplateViewMixin, TemplateView):
@@ -305,7 +305,7 @@ class GeoTenInitiativesView(CustomTemplateViewMixin, TemplateView):
         return response
 
 
-class InitiativeView(CustomTemplateViewMixin, TemplateView):
+class InitiativeView(InitiativeViewMixis, CustomTemplateViewMixin, TemplateView):
     MESSAGES_ON_PAGE = 10
 
     def get(self, request, *args, **kwargs):
@@ -321,10 +321,16 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
         paginator = Paginator(messages_qs, self.MESSAGES_ON_PAGE)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
+
+        profile = context['profile']
+        user_checked_initiative = profile.did_user_check_initiative(initiative=initiative)
+        user_resolution_for_initiative = profile.get_user_resolution_for_initiative(initiative=initiative)
         extra_context = {
             'community': community,
             'initiative': initiative,
             'page_obj': page_obj,
+            'user_checked_initiative': user_checked_initiative,
+            'user_resolution_for_initiative': user_resolution_for_initiative,
         }
         context.update(extra_context)
         response = render(request, 'veche_initiative.html', context=context)
@@ -337,34 +343,61 @@ class InitiativeView(CustomTemplateViewMixin, TemplateView):
             return response_400
 
         initiative = Initiative.objects.get(pk=initiative_id)
-        if initiative.status != Initiative.INITIATIVE_STATUS_OPEN_KEY:
-            return JsonResponse({'message': 'Инициатива закрыта. Добавлять сообщения нельзя'}, status=400)
+
+        initiative_closed_400 = self._check_if_initiative_closed(initiative=initiative)
+        if initiative_closed_400:
+            return initiative_closed_400
+
+        message_empty_400 = self._check_if_message_empty(request=request)
+        if message_empty_400:
+            return message_empty_400
 
         message_text = escape(request.POST.get('message', ''))
-        if len(message_text.replace(' ', '')) == 0:
-            return JsonResponse({'message': 'Нельзя добавить пустое сообщение'}, status=400)
-
         new_message = MessageInitiative.objects.create(initiative=initiative, author=request.user, message=message_text)
 
         messages_qs = initiative.initiative_messages.all().order_by('created_at')
         paginator = Paginator(messages_qs, self.MESSAGES_ON_PAGE)
-        return JsonResponse({'pageNum': paginator.num_pages, 'message_id': new_message.pk}, status=200)
-
-    def _check_initiative(self, initiative_id, is_resp_http=True) -> Union[HttpResponse, JsonResponse]:
-        result = None
-        try:
-            initiative = Initiative.objects.get(pk=initiative_id)
-        except Exception:
-            msg = 'Инициатива не найдена'
-            result = HttpResponse(msg, status=400) if is_resp_http else JsonResponse({'message': msg}, status=400)
-        else:
-            profile = self._get_profile()
-            if not initiative.does_user_have_access(profile):
-                msg = 'У вас нет доступа к инициативе'
-                result = HttpResponse(msg, status=400) if is_resp_http else JsonResponse({'message': msg}, status=400)
-        return result
+        data = {
+            'pageNum': paginator.num_pages,
+            'message_id': new_message.pk
+        }
+        return JsonResponse(data, status=200)
 
 
-class ResolutionInitiativeView(CustomTemplateViewMixin, TemplateView):
+class ResolutionInitiativeView(InitiativeViewMixis, CustomTemplateViewMixin, TemplateView):
+    AGREE_URL_ALIAS = 'agree_initiative'
+    REJECT_URL_ALIAS = 'reject_initiative'
+
     def post(self, request, *args, **kwargs):
+        initiative_id = kwargs.get('initiative_id')
+        response_400 = self._check_initiative(initiative_id, is_resp_http=False)
+        if response_400:
+            return response_400
+
+        initiative = Initiative.objects.get(pk=initiative_id)
+
+        initiative_closed_400 = self._check_if_initiative_closed(initiative=initiative)
+        if initiative_closed_400:
+            return initiative_closed_400
+
+        user_checked_initiative_400 = self._check_if_user_checked_initiative(initiative=initiative)
+        if user_checked_initiative_400:
+            return user_checked_initiative_400
+
+        current_url_alias = request.resolver_match.url_name
+        if current_url_alias == self.AGREE_URL_ALIAS:
+            ResolutionInitiative.objects.create(author=request.user,
+                                                resolution=ResolutionInitiative.RESOLUTION_AGREED_KEY,
+                                                initiative=initiative)
+        if current_url_alias == self.REJECT_URL_ALIAS:
+            message_empty_400 = self._check_if_message_empty(request=request)
+            if message_empty_400:
+                return message_empty_400
+
+            message_text = escape(request.POST.get('message', ''))
+            ResolutionInitiative.objects.create(author=request.user,
+                                                resolution=ResolutionInitiative.RESOLUTION_REJECTED_KEY,
+                                                initiative=initiative,
+                                                message=message_text)
+
         return JsonResponse({}, status=200)

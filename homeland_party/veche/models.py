@@ -261,6 +261,10 @@ class ResolutionInitiative(SafeDeleteModel, models.Model):
     created_at = models.DateTimeField(verbose_name='Дата создания', auto_now_add=True, db_index=True)
     resolution = models.CharField(verbose_name='Решение', choices=RESOLUTION_CHOICES, max_length=20)
     initiative = models.ForeignKey(to=Initiative, on_delete=models.CASCADE, related_name='initiative_resolutions')
+    message = models.TextField(verbose_name='Текст решения', null=True, blank=True)
 
     def is_ok(self):
         return self.resolution == self.RESOLUTION_AGREED_KEY
+
+    def __str__(self):
+        return f'{self.resolution} ({self.author.username}: {self.created_at.strftime("%d.%m.%Y %H:%M:%S")})'

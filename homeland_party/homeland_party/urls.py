@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 
-from homeland_party.views import HomePage, LoginPage
+from homeland_party.views import HomePage, LoginPage #, LogoutPage
 import veche.urls as veche_urls
 import crowdfunding.urls as crowdfunding_urls
 import crowdsourcing.urls as crowdsourcing_urls
@@ -18,4 +18,5 @@ urlpatterns = [
     re_path(r'^crowdsourcing/', include((crowdsourcing_urls, 'crowdsourcing'), namespace='crowdsourcing')),
     re_path(r'^invite/', include((invite_urls, 'invite'), namespace='invite')),
     re_path(r'^personal_cabinet/', include((personal_cabinet_urls, 'personal_cabinet'), namespace='personal_cabinet')),
+    # re_path(r'^logout/', LogoutPage.as_view(), name="logout"),
 ]

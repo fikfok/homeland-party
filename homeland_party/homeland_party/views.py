@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.template import RequestContext
 from django.views.generic import TemplateView
@@ -47,3 +46,7 @@ class LoginPage(TemplateView):
             if not user.check_password(password):
                 user = default_user
         return user
+
+
+# class LogoutPage:
+#     pass

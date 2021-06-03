@@ -352,6 +352,10 @@ class InitiativeView(InitiativeViewMixis, CustomTemplateViewMixin, TemplateView)
         if message_empty_400:
             return message_empty_400
 
+        user_checked_initiative_400 = self._check_if_user_checked_initiative(initiative=initiative)
+        if user_checked_initiative_400:
+            return user_checked_initiative_400
+
         message_text = escape(request.POST.get('message', ''))
         new_message = MessageInitiative.objects.create(initiative=initiative, author=request.user, message=message_text)
 

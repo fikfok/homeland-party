@@ -131,17 +131,25 @@
                 </span>
                 <hr class="rounded mt-4 mb-4">
 
-                <div class="row mb-3">
-                    <div class="col">
-                        <textarea id="initiativeMessage" class="form-control" type="text" rows="5"></textarea>
+                {% if user_checked_initiative %}
+                    <div class="row mb-3">
+                        <div class="col">
+                            <p class="text-secondary">Вы уже проголосовали за данную инициативу и не можете оставлять комментарии</p>
+                        </div>
                     </div>
-                </div>
+                {% else %}
+                    <div class="row mb-3">
+                        <div class="col">
+                            <textarea id="initiativeMessage" class="form-control" type="text" rows="5"></textarea>
+                        </div>
+                    </div>
 
-                <div class="row mb-5">
-                    <div class="col-md-6">
-                        <button id="sendInitiativeMessage" type="button" class="btn btn-primary">Отправить сообщение</button>
+                    <div class="row mb-5">
+                        <div class="col-md-6">
+                            <button id="sendInitiativeMessage" type="button" class="btn btn-primary">Отправить сообщение</button>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
 
             {% endblock %}
         </div>
@@ -224,48 +232,50 @@
             })
             });
 
+            $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
+                $('#simpleModal').modal('hide');
+                if (doReload) {
+                    document.location.reload();
+                }
+            });
+
+            $('#sendInitiativeMessage').on('click', function(event) {
+                var message = $('#initiativeMessage').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url 'veche:initiative' initiative.pk %}',
+                    data: {'message': message},
+                    success: function (response) {
+                        pageNum = '';
+                        messageID = '';
+
+                        $('#initiativeMessage').val('');
+                        if (response) {
+                            pageNum = response.pageNum ? response.pageNum : '';
+                            messageID = '#' + (response.message_id ? ('message' + response.message_id) : 'paginator');
+                        }
+
+                        if (parseInt(pageNum, 10) !== parseInt(currentPage, 10)) {
+                            window.location.href = "?page=" + pageNum + messageID;
+                        } else {
+                            window.location.replace("?page=" + pageNum + messageID);
+                            document.location.reload();
+                        }
+                    },
+                    error: function (response) {
+                        var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании сообщения';
+                        $('#simpleModalHeader').addClass('bg-danger');
+                        $('#simpleModalHeader h4').text('Сообщение не создано');
+                        $('#simpleModalMessage').text(message);
+                        $('#simpleModal').modal('show');
+                        doReload = true;
+                    }
+                })
+            });
+
         {% endif %}
 
-        $('#simpleModalClose, #simpleModalOk').on('click', function(event) {
-            $('#simpleModal').modal('hide');
-            if (doReload) {
-                document.location.reload();
-            }
-        });
-
-        $('#sendInitiativeMessage').on('click', function(event) {
-            var message = $('#initiativeMessage').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url 'veche:initiative' initiative.pk %}',
-                data: {'message': message},
-                success: function (response) {
-                    pageNum = '';
-                    messageID = '';
-
-                    $('#initiativeMessage').val('');
-                    if (response) {
-                        pageNum = response.pageNum ? response.pageNum : '';
-                        messageID = '#' + (response.message_id ? ('message' + response.message_id) : 'paginator');
-                    }
-
-                    if (parseInt(pageNum, 10) !== parseInt(currentPage, 10)) {
-                        window.location.href = "?page=" + pageNum + messageID;
-                    } else {
-                        window.location.replace("?page=" + pageNum + messageID);
-                        document.location.reload();
-                    }
-                },
-                error: function (response) {
-                    var message = response.responseJSON.message ? response.responseJSON.message : 'Ошибка при создании сообщения';
-                    $('#simpleModalHeader').addClass('bg-danger');
-                    $('#simpleModalHeader h4').text('Сообщение не создано');
-                    $('#simpleModalMessage').text(message);
-                    $('#simpleModal').modal('show');
-                }
-            })
-        });
 
     </script>
 {% endblock scripts %}

@@ -71,14 +71,14 @@
                             <p class="mb-0 text-secondary ">Статус инициативы: {{ initiative.get_status_display|title }}</p>
                         </div>
                         <div class="row mb-2">
-                            <p class="mb-0 text-secondary text-success">
-                                Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}
+                            <p class="mb-0 text-secondary">
+                                <span class="text-success">Поддержало <i class="fa fa-thumbs-up"></i>: {{ initiative.agreed_count }} из {{ community.profiles_count }}</span>
                                 {% if agree_users %} ({% endif %}{% for user in agree_users %}<a href="{% url 'veche:user_card' user.pk %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if agree_users %}){% endif %}
                             </p>
                         </div>
                         <div class="row mb-2">
-                            <p class="mb-0 text-secondary text-danger">
-                                Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}
+                            <p class="mb-0 text-secondary">
+                                <span class="text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</span>
                                 {% if reject_users %} ({% endif %}{% for user in reject_users %}<a href="{% url 'veche:user_card' user.pk %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if reject_users %}){% endif %}
                             </p>
                         </div>

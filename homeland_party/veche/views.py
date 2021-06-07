@@ -325,12 +325,14 @@ class InitiativeView(InitiativeViewMixis, CustomTemplateViewMixin, TemplateView)
         profile = context['profile']
         user_checked_initiative = profile.did_user_check_initiative(initiative=initiative)
         user_resolution_for_initiative = profile.get_user_resolution_for_initiative(initiative=initiative)
+        agree_users = initiative.get_agree_users()
         extra_context = {
             'community': community,
             'initiative': initiative,
             'page_obj': page_obj,
             'user_checked_initiative': user_checked_initiative,
             'user_resolution_for_initiative': user_resolution_for_initiative,
+            'agree_users': agree_users,
         }
         context.update(extra_context)
         response = render(request, 'veche_initiative.html', context=context)

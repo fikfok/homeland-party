@@ -211,6 +211,10 @@ class Initiative(SafeDeleteModel, models.Model):
     def rejected_count(self):
         return self.initiative_resolutions.filter(resolution=ResolutionInitiative.RESOLUTION_REJECTED_KEY).count()
 
+    @property
+    def total_resolutions(self):
+        return self.agreed_count + self.rejected_count
+
     def does_user_have_access(self, profile: Profile):
         profiles = list(self.community.get_profiles_qs())
         result = False
@@ -222,6 +226,19 @@ class Initiative(SafeDeleteModel, models.Model):
             all_profiles_ids = [prf.pk for prf in profiles]
             result = profile.pk in all_profiles_ids
         return result
+
+    def get_reject_users(self):
+        return self._get_resolution_users(resolution_decision=ResolutionInitiative.RESOLUTION_REJECTED_KEY)
+
+    def get_agree_users(self):
+        return self._get_resolution_users(resolution_decision=ResolutionInitiative.RESOLUTION_AGREED_KEY)
+
+    def _get_resolution_users(self, resolution_decision):
+        users = []
+        resolutions_qs = self.initiative_resolutions.filter(resolution=resolution_decision)
+        for resolution in resolutions_qs:
+            users.append(resolution.author)
+        return users
 
     def __str__(self):
         return f'{self.initiative_label} ({self.author.username}: {self.created_at.strftime("%d.%m.%Y %H:%M:%S")})'

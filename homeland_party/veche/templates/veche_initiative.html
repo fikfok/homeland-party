@@ -77,7 +77,10 @@
                             </p>
                         </div>
                         <div class="row mb-2">
-                            <p class="mb-0 text-secondary text-danger">Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}</p>
+                            <p class="mb-0 text-secondary text-danger">
+                                Отклонило <i class="fa fa-thumbs-down"></i>: {{ initiative.rejected_count }} из {{ community.profiles_count }}
+                                {% if reject_users %} ({% endif %}{% for user in reject_users %}<a href="{% url 'veche:user_card' user.pk %}">{{ user.username }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if reject_users %}){% endif %}
+                            </p>
                         </div>
                         <div class="row mb-2">
                             <p class="mb-0 text-secondary text-info">Проголосовало {{ initiative.total_resolutions }} из {{ initiative.community.profiles_count }}</p>
